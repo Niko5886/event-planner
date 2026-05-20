@@ -1,0 +1,20 @@
+{
+  "name": "event-planner",
+  "version": "1.0.0",
+  "description": "Event Planner app : Next.js + React + Expo",
+  "license": "ISC",
+  "author": "Nikolay Stoyanov",
+  "type": "commonjs",
+  "private": true,
+  "workspaces": [
+    "event-planner-web",
+    "event-planner-mobile"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "concurrently -n web,mobile -c blue,magenta --kill-others-on-fail \"npm run dev -w event-planner-web\" \"npm run start -w event-planner-mobile\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
