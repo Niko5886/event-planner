@@ -1,13 +1,13 @@
 import { sql } from "drizzle-orm";
 import {
-  bigserial,
-  bigint,
   boolean,
   check,
   date,
   index,
+  integer,
   pgEnum,
   pgTable,
+  serial,
   smallint,
   text,
   time,
@@ -21,7 +21,7 @@ export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
 export const users = pgTable(
   "users",
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
+    id: serial("id").primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull(),
     passwordHash: text("password_hash").notNull(),
@@ -39,10 +39,10 @@ export const users = pgTable(
 export const groups = pgTable(
   "groups",
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
+    id: serial("id").primaryKey(),
     title: text("title").notNull(),
     description: text("description"),
-    createdBy: bigint("created_by", { mode: "number" })
+    createdBy: integer("created_by")
       .notNull()
       .references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -57,11 +57,11 @@ export const groups = pgTable(
 export const groupMembers = pgTable(
   "group_members",
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    groupId: bigint("group_id", { mode: "number" })
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
-    userId: bigint("user_id", { mode: "number" })
+    userId: integer("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     isManager: boolean("is_manager").notNull().default(false),
@@ -82,8 +82,8 @@ export const groupMembers = pgTable(
 export const events = pgTable(
   "events",
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    groupId: bigint("group_id", { mode: "number" })
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
@@ -94,7 +94,7 @@ export const events = pgTable(
     location: text("location"),
     capacity: smallint("capacity").notNull().default(12),
     canceled: boolean("canceled").notNull().default(false),
-    createdBy: bigint("created_by", { mode: "number" })
+    createdBy: integer("created_by")
       .notNull()
       .references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -113,11 +113,11 @@ export const events = pgTable(
 export const eventRsvps = pgTable(
   "event_rsvps",
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    eventId: bigint("event_id", { mode: "number" })
+    id: serial("id").primaryKey(),
+    eventId: integer("event_id")
       .notNull()
       .references(() => events.id, { onDelete: "cascade" }),
-    userId: bigint("user_id", { mode: "number" })
+    userId: integer("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     extraSlots: smallint("extra_slots").notNull().default(0),
@@ -142,11 +142,11 @@ export const eventRsvps = pgTable(
 export const eventComments = pgTable(
   "event_comments",
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    eventId: bigint("event_id", { mode: "number" })
+    id: serial("id").primaryKey(),
+    eventId: integer("event_id")
       .notNull()
       .references(() => events.id, { onDelete: "cascade" }),
-    userId: bigint("user_id", { mode: "number" })
+    userId: integer("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     text: text("text").notNull(),
@@ -167,15 +167,13 @@ export const eventComments = pgTable(
 export const groupInvitations = pgTable(
   "group_invitations",
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    groupId: bigint("group_id", { mode: "number" })
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
     inviteCode: varchar("invite_code", { length: 64 }).notNull(),
     usedAt: timestamp("used_at", { withTimezone: true, mode: "date" }),
-    usedByUserId: bigint("used_by_user_id", { mode: "number" }).references(
-      () => users.id
-    ),
+    usedByUserId: integer("used_by_user_id").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .notNull()
       .defaultNow(),

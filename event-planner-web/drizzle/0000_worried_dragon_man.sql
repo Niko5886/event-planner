@@ -1,25 +1,25 @@
 CREATE TYPE "public"."user_role" AS ENUM('user', 'admin');--> statement-breakpoint
 CREATE TABLE "event_comments" (
-	"id" bigserial PRIMARY KEY NOT NULL,
-	"event_id" bigint NOT NULL,
-	"user_id" bigint NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
+	"event_id" integer NOT NULL,
+	"user_id" integer NOT NULL,
 	"text" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "event_rsvps" (
-	"id" bigserial PRIMARY KEY NOT NULL,
-	"event_id" bigint NOT NULL,
-	"user_id" bigint NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
+	"event_id" integer NOT NULL,
+	"user_id" integer NOT NULL,
 	"extra_slots" smallint DEFAULT 0 NOT NULL,
 	"rsvp_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "event_rsvps_extra_slots_check" CHECK ("event_rsvps"."extra_slots" between 0 and 3)
 );
 --> statement-breakpoint
 CREATE TABLE "events" (
-	"id" bigserial PRIMARY KEY NOT NULL,
-	"group_id" bigint NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
+	"group_id" integer NOT NULL,
 	"title" text NOT NULL,
 	"description" text,
 	"event_type" text,
@@ -28,38 +28,38 @@ CREATE TABLE "events" (
 	"location" text,
 	"capacity" smallint DEFAULT 12 NOT NULL,
 	"canceled" boolean DEFAULT false NOT NULL,
-	"created_by" bigint NOT NULL,
+	"created_by" integer NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "events_capacity_check" CHECK ("events"."capacity" >= 0)
 );
 --> statement-breakpoint
 CREATE TABLE "group_invitations" (
-	"id" bigserial PRIMARY KEY NOT NULL,
-	"group_id" bigint NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
+	"group_id" integer NOT NULL,
 	"invite_code" varchar(64) NOT NULL,
 	"used_at" timestamp with time zone,
-	"used_by_user_id" bigint,
+	"used_by_user_id" integer,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "group_members" (
-	"id" bigserial PRIMARY KEY NOT NULL,
-	"group_id" bigint NOT NULL,
-	"user_id" bigint NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
+	"group_id" integer NOT NULL,
+	"user_id" integer NOT NULL,
 	"is_manager" boolean DEFAULT false NOT NULL,
 	"joined_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "groups" (
-	"id" bigserial PRIMARY KEY NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
 	"title" text NOT NULL,
 	"description" text,
-	"created_by" bigint NOT NULL,
+	"created_by" integer NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
-	"id" bigserial PRIMARY KEY NOT NULL,
+	"id" serial PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
 	"password_hash" text NOT NULL,
