@@ -1,65 +1,117 @@
-import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import {
+  ArrowRight,
+  CalendarDays,
+  LogIn,
+  MessageCircle,
+  Sparkles,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
 
-export default function Home() {
+const FEATURES = [
+  {
+    title: "Create Events",
+    description:
+      "Set the date, location and capacity. Share with your group in seconds.",
+    icon: CalendarDays,
+  },
+  {
+    title: "Invite Friends",
+    description:
+      "Create a group and send an invite link. Promote managers to help organize.",
+    icon: Users,
+  },
+  {
+    title: "RSVP & Chat",
+    description:
+      "Members RSVP with +1 / +2 / +3 extra slots, comment and coordinate.",
+    icon: MessageCircle,
+  },
+];
+
+export default async function HomePage() {
+  const user = await getCurrentUser();
+  if (user) {
+    redirect("/dashboard");
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex flex-1 flex-col">
+      <section className="flex flex-1 items-center justify-center bg-gradient-to-b from-indigo-50 via-white to-white px-4 py-20">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-sm font-medium text-indigo-700 shadow-sm">
+            <Sparkles className="h-4 w-4" />
+            Plan together. Show up together.
+          </div>
+
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
+            Events with friends,{" "}
+            <span className="text-indigo-600">made simple.</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="mt-6 max-w-xl text-lg text-slate-600">
+            Event Planner helps you organize gatherings — from rooftop dinners
+            to mountain hikes. Create a group, send invites, RSVP, and keep the
+            chat in one place.
           </p>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            >
+              <UserPlus className="h-5 w-5" />
+              Get Started
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+            >
+              <LogIn className="h-5 w-5" />
+              Sign In
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="bg-white px-4 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-center text-3xl font-bold text-slate-900">
+            Everything you need to organize
+          </h2>
+          <p className="mx-auto mt-2 max-w-xl text-center text-slate-600">
+            Stop juggling group chats and shared docs. Event Planner brings
+            invitations, RSVPs and comments into one calm space.
+          </p>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {FEATURES.map(({ title, description, icon: Icon }) => (
+              <div
+                key={title}
+                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
+              >
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">
+                  {title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
+      </section>
+
+      <footer className="border-t border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
+        © {new Date().getFullYear()} Event Planner · Plan events with your friends.
+      </footer>
     </div>
   );
 }

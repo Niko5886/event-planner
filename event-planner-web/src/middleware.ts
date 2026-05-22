@@ -1,0 +1,34 @@
+import { NextRequest, NextResponse } from "next/server";
+import { AUTH_COOKIE_NAME } from "./lib/auth";
+
+const PUBLIC_PATHS = new Set(["/", "/login", "/register"]);
+
+function isPublicPath(pathname: string): boolean {
+  if (PUBLIC_PATHS.has(pathname)) return true;
+  if (pathname.startsWith("/api/auth/")) return true;
+  return false;
+}
+
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const hasToken = req.cookies.has(AUTH_COOKIE_NAME);
+
+  if (isPublicPath(pathname)) {
+    return NextResponse.next();
+  }
+
+  if (!hasToken) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = `?redirect=${encodeURIComponent(pathname)}`;
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
+};
