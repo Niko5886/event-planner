@@ -19,8 +19,9 @@ export function middleware(req: NextRequest) {
 
   if (!hasToken) {
     const url = req.nextUrl.clone();
+    const target = pathname + (req.nextUrl.search || "");
     url.pathname = "/login";
-    url.search = `?redirect=${encodeURIComponent(pathname)}`;
+    url.search = `?redirect=${encodeURIComponent(target)}`;
     return NextResponse.redirect(url);
   }
 

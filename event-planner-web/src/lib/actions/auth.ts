@@ -15,12 +15,19 @@ export type AuthFormState = {
   error: string | null;
 };
 
+function safeRedirectTarget(raw: unknown): string {
+  if (typeof raw !== "string") return "/dashboard";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/dashboard";
+  return raw;
+}
+
 export async function loginAction(
   _prev: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  const redirectTo = safeRedirectTarget(formData.get("redirect"));
 
   if (!email || !password) {
     return { error: "Моля попълни имейл и парола." };
@@ -45,7 +52,7 @@ export async function loginAction(
     email: user.email,
     role: user.role,
   });
-  redirect("/dashboard");
+  redirect(redirectTo);
 }
 
 export async function registerAction(
