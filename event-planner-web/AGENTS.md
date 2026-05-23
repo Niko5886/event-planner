@@ -1,4 +1,4 @@
-# Event Planner – Next.js App
+# Event Planner
 
 Event planner app: manage groups and events (users create groups, group managers create events in the groups, group members view events and RSVP to events, comment and share event links)
 
