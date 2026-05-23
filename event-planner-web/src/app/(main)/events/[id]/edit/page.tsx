@@ -37,14 +37,14 @@ export default async function EditEventPage({
         className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-indigo-700"
       >
         <ArrowLeft className="h-4 w-4" />
-        Обратно към събитието
+        Back to event
       </Link>
 
       <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">
-        Редактирай събитие
+        Edit event
       </h1>
       <p className="mt-1 text-sm text-slate-500">
-        Промени дата, час, място, капацитет или отмени събитието.
+        Change date, time, location, capacity, or cancel the event.
       </p>
 
       <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">

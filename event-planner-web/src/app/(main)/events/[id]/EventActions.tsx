@@ -26,9 +26,18 @@ type Props = {
   isRsvped: boolean;
   canManage: boolean;
   isOpen: boolean;
+  capacity: number;
+  attendees: number;
 };
 
-export function EventActions({ eventId, isRsvped, canManage, isOpen }: Props) {
+export function EventActions({
+  eventId,
+  isRsvped,
+  canManage,
+  isOpen,
+  capacity,
+  attendees,
+}: Props) {
   const [rsvpState, rsvpAction, rsvpPending] = useActionState(
     rsvpEventAction,
     initialState
@@ -38,25 +47,30 @@ export function EventActions({ eventId, isRsvped, canManage, isOpen }: Props) {
     initialState
   );
 
-  const feedback = rsvpState.error
-    ? { type: "error" as const, text: rsvpState.error }
-    : leaveState.error
-    ? { type: "error" as const, text: leaveState.error }
-    : rsvpState.success
-    ? { type: "success" as const, text: rsvpState.success }
-    : leaveState.success
-    ? { type: "success" as const, text: leaveState.success }
-    : null;
+  const remainingSeats = Math.max(0, capacity - attendees);
+
+  const feedback =
+    rsvpState.error || leaveState.error
+      ? {
+          type: "error" as const,
+          text: rsvpState.error || leaveState.error || "",
+        }
+      : rsvpState.success || leaveState.success
+      ? {
+          type: "success" as const,
+          text: rsvpState.success || leaveState.success || "",
+        }
+      : null;
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-3">
         {!isRsvped ? (
           <form action={rsvpAction}>
             <input type="hidden" name="eventId" value={eventId} />
             <button
               type="submit"
-              disabled={!isOpen || rsvpPending}
+              disabled={!isOpen || rsvpPending || remainingSeats <= 0}
               className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {rsvpPending ? (
@@ -92,7 +106,7 @@ export function EventActions({ eventId, isRsvped, canManage, isOpen }: Props) {
               className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
             >
               <Pencil className="h-4 w-4" />
-              Редактирай
+              Edit
             </Link>
             <DeleteButton eventId={eventId} />
           </>
@@ -101,7 +115,8 @@ export function EventActions({ eventId, isRsvped, canManage, isOpen }: Props) {
 
       {!isOpen && !isRsvped && (
         <p className="text-xs text-slate-500">
-          Това събитие вече е приключило или е отменено — записване не е възможно.
+          This event has already ended or has been canceled — joining is not
+          possible.
         </p>
       )}
 
@@ -136,14 +151,14 @@ function DeleteButton({ eventId }: { eventId: number }) {
         className="inline-flex items-center gap-2 rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-50"
       >
         <Trash2 className="h-4 w-4" />
-        Изтрий
+        Delete
       </button>
     );
   }
 
   return (
     <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2">
-      <span className="text-sm font-medium text-red-700">Сигурен ли си?</span>
+      <span className="text-sm font-medium text-red-700">Are you sure?</span>
       <form action={deleteEventAction}>
         <input type="hidden" name="eventId" value={eventId} />
         <button
@@ -151,14 +166,14 @@ function DeleteButton({ eventId }: { eventId: number }) {
           className="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-red-700"
         >
           <Trash2 className="h-3.5 w-3.5" />
-          Да, изтрий
+          Yes, delete
         </button>
       </form>
       <button
         type="button"
         onClick={() => setConfirming(false)}
         className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-        aria-label="Отказ"
+        aria-label="Cancel"
       >
         <X className="h-3.5 w-3.5" />
       </button>

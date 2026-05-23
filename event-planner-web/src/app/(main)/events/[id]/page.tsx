@@ -192,14 +192,17 @@ export default async function EventDetailPage({
 
       <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Действия
+          Actions
         </h2>
         <div className="mt-3">
           <EventActions
+            key={`${event.id}:${event.isRsvped ? 1 : 0}`}
             eventId={event.id}
             isRsvped={event.isRsvped}
             canManage={event.canManage}
             isOpen={isOpen}
+            capacity={event.capacity}
+            attendees={event.attendees}
           />
         </div>
       </section>

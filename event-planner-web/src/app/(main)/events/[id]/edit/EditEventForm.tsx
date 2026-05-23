@@ -45,12 +45,12 @@ export function EditEventForm({ eventId, initial }: Props) {
       <input type="hidden" name="eventId" value={eventId} />
 
       <Field
-        label="Заглавие"
+        label="Title"
         name="title"
         defaultValue={initial.title}
         required
         maxLength={120}
-        placeholder="Името на събитието"
+        placeholder="Event name"
       />
 
       <div>
@@ -58,7 +58,7 @@ export function EditEventForm({ eventId, initial }: Props) {
           htmlFor="description"
           className="block text-sm font-medium text-slate-700"
         >
-          Описание
+          Description
         </label>
         <textarea
           id="description"
@@ -67,13 +67,13 @@ export function EditEventForm({ eventId, initial }: Props) {
           defaultValue={initial.description}
           maxLength={2000}
           className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          placeholder="Кратко описание на събитието…"
+          placeholder="A short description of the event…"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
-          label="Дата"
+          label="Date"
           name="date"
           type="date"
           icon={<CalendarDays className="h-4 w-4" />}
@@ -81,7 +81,7 @@ export function EditEventForm({ eventId, initial }: Props) {
           required
         />
         <Field
-          label="Час"
+          label="Time"
           name="time"
           type="time"
           icon={<Clock className="h-4 w-4" />}
@@ -89,15 +89,15 @@ export function EditEventForm({ eventId, initial }: Props) {
           required
         />
         <Field
-          label="Място"
+          label="Location"
           name="location"
           icon={<MapPin className="h-4 w-4" />}
           defaultValue={initial.location}
           maxLength={200}
-          placeholder="Адрес или място"
+          placeholder="Address or venue"
         />
         <Field
-          label="Тип"
+          label="Type"
           name="eventType"
           icon={<Tag className="h-4 w-4" />}
           defaultValue={initial.eventType}
@@ -105,7 +105,7 @@ export function EditEventForm({ eventId, initial }: Props) {
           placeholder="party, hike, dinner…"
         />
         <Field
-          label="Капацитет"
+          label="Capacity"
           name="capacity"
           type="number"
           icon={<Users className="h-4 w-4" />}
@@ -124,7 +124,7 @@ export function EditEventForm({ eventId, initial }: Props) {
           className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
         />
         <span className="text-sm font-medium text-slate-700">
-          Отмени събитието
+          Cancel this event
         </span>
       </label>
 
@@ -146,14 +146,14 @@ export function EditEventForm({ eventId, initial }: Props) {
           ) : (
             <Save className="h-4 w-4" />
           )}
-          {pending ? "Запазване…" : "Запази промените"}
+          {pending ? "Saving…" : "Save changes"}
         </button>
         <Link
           href={`/events/${eventId}`}
           className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
         >
           <X className="h-4 w-4" />
-          Отказ
+          Cancel
         </Link>
       </div>
     </form>

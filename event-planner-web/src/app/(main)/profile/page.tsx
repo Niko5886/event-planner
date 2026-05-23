@@ -21,15 +21,7 @@ export default async function ProfilePage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center gap-3">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-2xl font-bold text-white shadow-sm">
-          {user.photoUrl ? (
-            <img
-              src={user.photoUrl}
-              alt={user.name}
-              className="h-16 w-16 rounded-2xl object-cover"
-            />
-          ) : (
-            initials || <User className="h-7 w-7" />
-          )}
+          {initials || <User className="h-7 w-7" />}
         </div>
         <div>
           <p className="text-sm font-medium uppercase tracking-wide text-indigo-600">

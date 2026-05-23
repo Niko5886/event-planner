@@ -8,6 +8,7 @@ import {
   deleteEvent,
   leaveEvent,
   rsvpToEvent,
+  updateRsvpSlots,
   updateEvent,
 } from "@/services/eventService";
 
@@ -42,12 +43,14 @@ export async function rsvpEventAction(
   }
 
   const eventId = Number(formData.get("eventId"));
+  const extraRaw = String(formData.get("extraSlots") ?? "0");
+  const extraSlots = extraRaw ? Number(extraRaw) : 0;
   if (!Number.isInteger(eventId) || eventId <= 0) {
     return { error: "Invalid event." };
   }
 
   try {
-    await rsvpToEvent({ eventId, userId: user.userId });
+    await rsvpToEvent({ eventId, userId: user.userId, extraSlots });
   } catch (err) {
     return { error: mapEventError(err) };
   }
@@ -55,6 +58,33 @@ export async function rsvpEventAction(
   revalidatePath(`/events/${eventId}`);
   revalidatePath("/dashboard");
   return { error: null, success: "You're signed up for this event." };
+}
+
+export async function updateSlotsAction(
+  _prev: EventActionState,
+  formData: FormData
+): Promise<EventActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const eventId = Number(formData.get("eventId"));
+  const extraRaw = String(formData.get("extraSlots") ?? "0");
+  const extraSlots = extraRaw ? Number(extraRaw) : 0;
+  if (!Number.isInteger(eventId) || eventId <= 0) {
+    return { error: "Invalid event." };
+  }
+
+  try {
+    await updateRsvpSlots({ eventId, userId: user.userId, extraSlots });
+  } catch (err) {
+    return { error: mapEventError(err) };
+  }
+
+  revalidatePath(`/events/${eventId}`);
+  revalidatePath("/dashboard");
+  return { error: null, success: "Updated guest slots." };
 }
 
 export async function leaveEventAction(
@@ -68,7 +98,7 @@ export async function leaveEventAction(
 
   const eventId = Number(formData.get("eventId"));
   if (!Number.isInteger(eventId) || eventId <= 0) {
-    return { error: "Невалидно събитие." };
+    return { error: "Invalid event." };
   }
 
   try {
@@ -79,7 +109,7 @@ export async function leaveEventAction(
 
   revalidatePath(`/events/${eventId}`);
   revalidatePath("/dashboard");
-  return { error: null, success: "Отписан си от събитието." };
+  return { error: null, success: "You've left this event." };
 }
 
 export async function updateEventAction(
@@ -93,7 +123,7 @@ export async function updateEventAction(
 
   const eventId = Number(formData.get("eventId"));
   if (!Number.isInteger(eventId) || eventId <= 0) {
-    return { error: "Невалидно събитие." };
+    return { error: "Invalid event." };
   }
 
   const title = String(formData.get("title") ?? "").trim();
@@ -107,13 +137,13 @@ export async function updateEventAction(
   const canceled = formData.get("canceled") === "on";
 
   if (!title) {
-    return { error: "Моля въведи заглавие на събитието." };
+    return { error: "Please enter an event title." };
   }
   if (!date || !time) {
-    return { error: "Моля въведи дата и час." };
+    return { error: "Please provide both date and time." };
   }
   if (!Number.isFinite(capacity)) {
-    return { error: "Невалиден капацитет." };
+    return { error: "Invalid capacity." };
   }
 
   try {

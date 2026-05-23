@@ -31,6 +31,7 @@ export type EventDetails = EventCardData & {
   isRsvped: boolean;
   isCreator: boolean;
   canManage: boolean;
+  userExtraSlots: number;
 };
 
 export type EventCommentData = {
@@ -42,6 +43,17 @@ export type EventCommentData = {
   authorName: string;
   authorPhotoUrl: string | null;
 };
+
+export type EventAttendee = {
+  userId: number;
+  name: string;
+  photoUrl: string | null;
+  extraSlots: number;
+  rsvpAt: Date;
+};
+
+export const MAX_COMMENT_LENGTH = 2000;
+export const MIN_COMMENT_LENGTH = 1;
 
 export type EventErrorCode =
   | "not_found"
@@ -108,6 +120,47 @@ export async function getActiveEventsForUser(
     .orderBy(asc(events.date), asc(events.time));
 }
 
+export async function getActiveEventsForUserPaged(input: {
+  userId: number;
+  limit: number;
+  offset: number;
+}): Promise<{ items: EventCardData[]; total: number }> {
+  const whereClause = and(
+    eq(events.canceled, false),
+    sql`${eventEndUtcExpr} > ${nowUtcExpr}`
+  );
+
+  const items = await db
+    .select(baseSelect)
+    .from(events)
+    .innerJoin(groups, eq(groups.id, events.groupId))
+    .innerJoin(
+      groupMembers,
+      and(
+        eq(groupMembers.groupId, events.groupId),
+        eq(groupMembers.userId, input.userId)
+      )
+    )
+    .where(whereClause)
+    .orderBy(asc(events.date), asc(events.time))
+    .limit(input.limit)
+    .offset(input.offset);
+
+  const [countRow] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(events)
+    .innerJoin(
+      groupMembers,
+      and(
+        eq(groupMembers.groupId, events.groupId),
+        eq(groupMembers.userId, input.userId)
+      )
+    )
+    .where(whereClause);
+
+  return { items, total: Number(countRow?.total ?? 0) };
+}
+
 export async function getPastAndCanceledEventsForUser(
   userId: number
 ): Promise<EventCardData[]> {
@@ -150,7 +203,7 @@ export async function getEventDetails(
   }
 
   const [rsvp] = await db
-    .select({ id: eventRsvps.id })
+    .select({ id: eventRsvps.id, extraSlots: eventRsvps.extraSlots })
     .from(eventRsvps)
     .where(
       and(eq(eventRsvps.eventId, eventId), eq(eventRsvps.userId, viewerId))
@@ -163,6 +216,7 @@ export async function getEventDetails(
   return {
     ...row,
     isRsvped: Boolean(rsvp),
+    userExtraSlots: rsvp ? Number(rsvp.extraSlots ?? 0) : 0,
     isCreator,
     canManage: isCreator || isAdmin,
   };
@@ -187,9 +241,104 @@ export async function getEventComments(eventId: number): Promise<
     .orderBy(asc(eventComments.createdAt), asc(eventComments.id));
 }
 
+export async function getEventCommentsPaged(input: {
+  eventId: number;
+  limit: number;
+  offset: number;
+}): Promise<{ items: EventCommentData[]; total: number }> {
+  const items = await db
+    .select({
+      id: eventComments.id,
+      text: eventComments.text,
+      createdAt: eventComments.createdAt,
+      updatedAt: eventComments.updatedAt,
+      userId: eventComments.userId,
+      authorName: users.name,
+      authorPhotoUrl: users.photoUrl,
+    })
+    .from(eventComments)
+    .innerJoin(users, eq(users.id, eventComments.userId))
+    .where(eq(eventComments.eventId, input.eventId))
+    .orderBy(asc(eventComments.createdAt), asc(eventComments.id))
+    .limit(input.limit)
+    .offset(input.offset);
+
+  const [countRow] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(eventComments)
+    .where(eq(eventComments.eventId, input.eventId));
+
+  return { items, total: Number(countRow?.total ?? 0) };
+}
+
+export async function postEventComment(input: {
+  eventId: number;
+  userId: number;
+  text: string;
+}): Promise<EventCommentData> {
+  const text = input.text.trim();
+  if (text.length < MIN_COMMENT_LENGTH || text.length > MAX_COMMENT_LENGTH) {
+    throw new EventError("invalid_input");
+  }
+
+  const [event] = await db
+    .select({ id: events.id })
+    .from(events)
+    .where(eq(events.id, input.eventId))
+    .limit(1);
+  if (!event) {
+    throw new EventError("not_found");
+  }
+
+  const [created] = await db
+    .insert(eventComments)
+    .values({
+      eventId: input.eventId,
+      userId: input.userId,
+      text,
+    })
+    .returning({
+      id: eventComments.id,
+      text: eventComments.text,
+      createdAt: eventComments.createdAt,
+      updatedAt: eventComments.updatedAt,
+      userId: eventComments.userId,
+    });
+
+  const [author] = await db
+    .select({ name: users.name, photoUrl: users.photoUrl })
+    .from(users)
+    .where(eq(users.id, input.userId))
+    .limit(1);
+
+  return {
+    ...created,
+    authorName: author?.name ?? "",
+    authorPhotoUrl: author?.photoUrl ?? null,
+  };
+}
+
+export async function getEventAttendees(
+  eventId: number
+): Promise<EventAttendee[]> {
+  return db
+    .select({
+      userId: eventRsvps.userId,
+      name: users.name,
+      photoUrl: users.photoUrl,
+      extraSlots: eventRsvps.extraSlots,
+      rsvpAt: eventRsvps.rsvpAt,
+    })
+    .from(eventRsvps)
+    .innerJoin(users, eq(users.id, eventRsvps.userId))
+    .where(eq(eventRsvps.eventId, eventId))
+    .orderBy(asc(eventRsvps.rsvpAt), asc(eventRsvps.id));
+}
+
 export async function rsvpToEvent(input: {
   eventId: number;
   userId: number;
+  extraSlots?: number;
 }): Promise<void> {
   const [event] = await db
     .select({
@@ -197,6 +346,7 @@ export async function rsvpToEvent(input: {
       date: events.date,
       time: events.time,
       canceled: events.canceled,
+      capacity: events.capacity,
     })
     .from(events)
     .where(eq(events.id, input.eventId))
@@ -210,7 +360,7 @@ export async function rsvpToEvent(input: {
   }
 
   const [existing] = await db
-    .select({ id: eventRsvps.id })
+    .select({ id: eventRsvps.id, extraSlots: eventRsvps.extraSlots })
     .from(eventRsvps)
     .where(
       and(
@@ -224,10 +374,29 @@ export async function rsvpToEvent(input: {
     throw new EventError("already_rsvped");
   }
 
+    const extra = Number(input.extraSlots ?? 0);
+    if (!Number.isInteger(extra) || extra < 0) {
+      throw new EventError("invalid_input");
+    }
+
+    // compute current attendees
+    const [current] = await db
+      .select({
+        attendees: sql<number>`COALESCE(SUM(1 + ${eventRsvps.extraSlots})::int, 0)`,
+      })
+      .from(eventRsvps)
+      .where(eq(eventRsvps.eventId, input.eventId));
+
+    const currentAttendees = Number(current?.attendees ?? 0);
+    const newTotal = currentAttendees + 1 + extra;
+    if (newTotal > Number(event.capacity)) {
+      throw new EventError("invalid_input");
+    }
+
   await db.insert(eventRsvps).values({
     eventId: input.eventId,
     userId: input.userId,
-    extraSlots: 0,
+    extraSlots: extra,
   });
 }
 
@@ -266,6 +435,77 @@ export async function leaveEvent(input: {
   if (result.length === 0) {
     throw new EventError("not_rsvped");
   }
+}
+
+export async function updateRsvpSlots(input: {
+  eventId: number;
+  userId: number;
+  extraSlots: number;
+}): Promise<void> {
+  const [event] = await db
+    .select({
+      id: events.id,
+      date: events.date,
+      time: events.time,
+      canceled: events.canceled,
+      capacity: events.capacity,
+    })
+    .from(events)
+    .where(eq(events.id, input.eventId))
+    .limit(1);
+
+  if (!event) {
+    throw new EventError("not_found");
+  }
+  if (!isEventActive(event.date, event.time, event.canceled)) {
+    throw new EventError("event_closed");
+  }
+
+  const [existing] = await db
+    .select({ id: eventRsvps.id, extraSlots: eventRsvps.extraSlots })
+    .from(eventRsvps)
+    .where(
+      and(
+        eq(eventRsvps.eventId, input.eventId),
+        eq(eventRsvps.userId, input.userId)
+      )
+    )
+    .limit(1);
+
+  if (!existing) {
+    throw new EventError("not_rsvped");
+  }
+
+  const extra = Number(input.extraSlots ?? 0);
+  if (!Number.isInteger(extra) || extra < 0) {
+    throw new EventError("invalid_input");
+  }
+
+  const currentExtra = Number(existing?.extraSlots ?? 0);
+
+  // compute current attendees
+  const [current] = await db
+    .select({
+      attendees: sql<number>`COALESCE(SUM(1 + ${eventRsvps.extraSlots})::int, 0)`,
+    })
+    .from(eventRsvps)
+    .where(eq(eventRsvps.eventId, input.eventId));
+  const currentAttendees = Number(current?.attendees ?? 0);
+
+  const newTotal = currentAttendees - currentExtra + extra; // replace their extraSlots
+  if (newTotal > Number(event.capacity)) {
+    throw new EventError("invalid_input");
+  }
+
+  await db
+    .update(eventRsvps)
+    .set({ extraSlots: extra })
+    .where(
+      and(
+        eq(eventRsvps.eventId, input.eventId),
+        eq(eventRsvps.userId, input.userId)
+      )
+    );
 }
 
 type AuthorizedEventInput = {
