@@ -35,6 +35,14 @@ Use these demo accounts after seeding the database:
 | Group Manager | manager@demo.com | demo123 |
 | Group Member | member@demo.com | demo123 |
 
+## Web Export
+
+Generate a static web build (output goes to `dist/`):
+
+```
+npm run export:web -w event-planner-mobile
+```
+
 ## More Documentation
 
 See the root `README.md` for architecture, schema, and full setup instructions.

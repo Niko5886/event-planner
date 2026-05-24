@@ -182,6 +182,14 @@ npm run db:migrate -w event-planner-web
 npm run db:seed -w event-planner-web
 ```
 
+### Expo Web Export
+
+Generate a static web build for the mobile app:
+
+```
+npm run export:web -w event-planner-mobile
+```
+
 ---
 
 ## Key Folders and Files
