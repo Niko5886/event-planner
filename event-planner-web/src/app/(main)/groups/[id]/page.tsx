@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Crown, Users } from "lucide-react";
+import { DeleteGroupButton } from "./DeleteGroupButton";
 import { InviteLink } from "./InviteLink";
 import { getCurrentUser } from "@/lib/auth";
 import { GroupError, getGroupDetails } from "@/services/groupService";
@@ -29,6 +30,8 @@ export default async function GroupDetailsPage({
     throw err;
   }
 
+  const canDelete = group.createdBy === user.userId || user.role === "admin";
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <Link
@@ -48,12 +51,17 @@ export default async function GroupDetailsPage({
             <p className="mt-2 max-w-2xl text-slate-600">{group.description}</p>
           )}
         </div>
-        {group.isManager && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-            <Crown className="h-3.5 w-3.5" />
-            You are a manager
-          </span>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {group.isManager && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+              <Crown className="h-3.5 w-3.5" />
+              You are a manager
+            </span>
+          )}
+          {canDelete && (
+            <DeleteGroupButton groupId={group.id} groupTitle={group.title} />
+          )}
+        </div>
       </header>
 
       {group.isManager && group.inviteCode && (

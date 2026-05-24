@@ -8,6 +8,7 @@ import {
   MAX_GROUP_DESCRIPTION_LENGTH,
   MAX_GROUP_TITLE_LENGTH,
   createGroup,
+  deleteGroup,
   joinGroupByInviteCode,
 } from "@/services/groupService";
 
@@ -56,6 +57,37 @@ export async function createGroupAction(
 
   revalidatePath("/groups");
   redirect(`/groups/${created.id}`);
+}
+
+export async function deleteGroupAction(formData: FormData): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const groupId = Number(formData.get("groupId"));
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    redirect("/groups");
+  }
+
+  try {
+    await deleteGroup({
+      groupId,
+      userId: user.userId,
+      role: user.role,
+    });
+  } catch (err) {
+    if (err instanceof GroupError) {
+      if (err.code === "not_found" || err.code === "forbidden") {
+        redirect("/groups");
+      }
+    }
+    throw err;
+  }
+
+  revalidatePath("/groups");
+  revalidatePath("/dashboard");
+  redirect("/groups");
 }
 
 export async function joinGroupAction(

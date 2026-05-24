@@ -16,6 +16,7 @@ export type GroupErrorCode =
   | "not_found"
   | "not_member"
   | "already_member"
+  | "forbidden"
   | "invalid_input"
   | "input_too_long"
   | "input_too_short";
@@ -210,6 +211,30 @@ export async function isGroupMember(
     )
     .limit(1);
   return Boolean(row);
+}
+
+export async function deleteGroup(input: {
+  groupId: number;
+  userId: number;
+  role: "user" | "admin";
+}): Promise<void> {
+  const [group] = await db
+    .select({ id: groups.id, createdBy: groups.createdBy })
+    .from(groups)
+    .where(eq(groups.id, input.groupId))
+    .limit(1);
+
+  if (!group) {
+    throw new GroupError("not_found");
+  }
+
+  const isCreator = group.createdBy === input.userId;
+  const isAdmin = input.role === "admin";
+  if (!isCreator && !isAdmin) {
+    throw new GroupError("forbidden");
+  }
+
+  await db.delete(groups).where(eq(groups.id, input.groupId));
 }
 
 export async function joinGroupByInviteCode(input: {
