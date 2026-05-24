@@ -191,7 +191,7 @@ export default function EventDetailsScreen() {
 
       {isActive ? (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Your RSVP</Text>
+          <Text style={styles.sectionTitle}>Your Attendance</Text>
           {event.isRsvped ? (
             <View style={styles.rsvpBlock}>
               <Text style={styles.rsvpText}>You&apos;re going! 🎉</Text>
@@ -223,7 +223,7 @@ export default function EventDetailsScreen() {
               />
             </View>
           ) : (
-            <Button title="RSVP" onPress={onRsvp} loading={actionLoading} />
+            <Button title="Join" onPress={onRsvp} loading={actionLoading} />
           )}
         </View>
       ) : null}

@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "dev": "concurrently -n web,mobile -c blue,magenta --kill-others-on-fail \"npm run dev -w event-planner-web\" \"npm run start -w event-planner-mobile\""
+    "dev": "concurrently -n web,mobile -c blue,magenta --kill-others-on-fail \"npm run dev -w event-planner-web\" \"npm run start -w event-planner-mobile\"",
+    "dev:alt": "concurrently -n web,mobile -c blue,magenta --kill-others-on-fail \"npm run dev -w event-planner-web\" \"npm run start:alt -w event-planner-mobile\""
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
