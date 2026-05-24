@@ -85,6 +85,116 @@ A scope-limited React Native / Expo app focused on the core member experience: l
 
 ---
 
+## Architecture Overview
+
+- Next.js Web app provides UI plus server-side logic (Server Actions + API routes).
+- Expo mobile app consumes the REST API exposed by the Web app.
+- Business logic lives in a service layer consumed by both Server Actions and API routes.
+- PostgreSQL (Neon) is accessed via Drizzle ORM and migrations.
+
+---
+
+## Repo Structure
+
+```
+event planner/
+	AGENTS.md
+	README.md
+	package.json
+	event-planner-web/
+		src/
+			app/            # Next.js UI + API routes
+			services/       # Business logic layer
+			db/             # Drizzle schema + seeds
+		drizzle/          # Migrations
+		README.md
+	event-planner-mobile/
+		src/              # Expo app source
+		README.md
+	event-planner-shared/
+		src/              # Shared types/utilities
+```
+
+---
+
+## Database Schema (High Level)
+
+```mermaid
+erDiagram
+	users ||--o{ groups : creates
+	users ||--o{ group_members : joins
+	groups ||--o{ group_members : has
+	groups ||--o{ group_invitations : invites
+	users ||--o{ group_invitations : uses
+	groups ||--o{ events : hosts
+	users ||--o{ events : creates
+	events ||--o{ event_rsvps : has
+	users ||--o{ event_rsvps : rsvps
+	events ||--o{ event_comments : has
+	users ||--o{ event_comments : writes
+```
+
+---
+
+## Local Development Setup
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL database (Neon recommended)
+
+### Environment Variables
+
+Create the following files:
+
+`event-planner-web/.env`
+
+```
+DATABASE_URL=postgresql://<user>:<pass>@<host>/<db>?sslmode=require
+JWT_SECRET=<random_secret_min_32_chars>
+```
+
+`event-planner-mobile/.env`
+
+```
+EXPO_PUBLIC_API_BASE_URL=http://localhost:3000/api
+```
+
+### Install and Run
+
+From the repo root:
+
+```
+npm install
+npm run dev
+```
+
+Alternative: run apps separately
+
+```
+npm run dev -w event-planner-web
+npm run start -w event-planner-mobile
+```
+
+### Database Migrations and Seed
+
+```
+npm run db:migrate -w event-planner-web
+npm run db:seed -w event-planner-web
+```
+
+---
+
+## Key Folders and Files
+
+- `event-planner-web/src/app`: Next.js routes, pages, and API endpoints.
+- `event-planner-web/src/services`: Business logic for groups, events, RSVP, comments.
+- `event-planner-web/src/db`: Drizzle schema, DB helpers, and seed script.
+- `event-planner-web/drizzle`: Drizzle migrations.
+- `event-planner-mobile/src`: Expo mobile app screens and components.
+- `event-planner-shared/src`: Shared types and utilities across web/mobile.
+
+---
+
 ## Sample Credentials
 
 | Role | Email | Password |
