@@ -9,6 +9,7 @@ import {
   LogIn,
   LogOut,
   Menu,
+  ShieldCheck,
   User,
   UserPlus,
   Users,
@@ -28,12 +29,16 @@ const NAV_LINKS = [
   { href: "/profile", label: "Profile", icon: User },
 ];
 
+const ADMIN_LINK = { href: "/admin", label: "Admin", icon: ShieldCheck };
+
 export function Header({ user }: { user: HeaderUser }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
+
+  const links = user?.role === "admin" ? [...NAV_LINKS, ADMIN_LINK] : NAV_LINKS;
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -45,7 +50,7 @@ export function Header({ user }: { user: HeaderUser }) {
 
         {user && (
           <nav className="hidden items-center gap-1 md:flex">
-            {NAV_LINKS.map(({ href, label, icon: Icon }) => (
+            {links.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -119,7 +124,7 @@ export function Header({ user }: { user: HeaderUser }) {
         <div className="border-t border-slate-200 bg-white md:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
             {user &&
-              NAV_LINKS.map(({ href, label, icon: Icon }) => (
+              links.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
