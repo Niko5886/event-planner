@@ -500,15 +500,31 @@ export async function updateRsvpSlots(input: {
     throw new EventError("invalid_input");
   }
 
-  await db
-    .update(eventRsvps)
-    .set({ extraSlots: extra })
-    .where(
-      and(
-        eq(eventRsvps.eventId, input.eventId),
-        eq(eventRsvps.userId, input.userId)
-      )
-    );
+  // Defensive: clamp to a reasonable server-side max and convert DB constraint
+  // violations into `invalid_input` to avoid 500s if DB migrations haven't
+  // been applied yet.
+  const MAX_EXTRA_SLOTS = 1000;
+  const toWrite = Math.min(extra, MAX_EXTRA_SLOTS);
+
+  try {
+    await db
+      .update(eventRsvps)
+      .set({ extraSlots: toWrite })
+      .where(
+        and(
+          eq(eventRsvps.eventId, input.eventId),
+          eq(eventRsvps.userId, input.userId)
+        )
+      );
+  } catch (err: any) {
+    const msg = String(err?.message ?? err);
+    // Postgres CHECK constraint name for extra_slots usually contains
+    // 'event_rsvps_extra_slots_check' — treat that as invalid input.
+    if (msg.includes("event_rsvps_extra_slots_check") || msg.includes("check constraint")) {
+      throw new EventError("invalid_input");
+    }
+    throw err;
+  }
 }
 
 type AuthorizedEventInput = {
