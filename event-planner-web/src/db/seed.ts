@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./index";
 import {
   eventComments,
@@ -87,6 +87,20 @@ const GROUP_SEEDS: GroupSeed[] = [
     ],
     managerEmails: ["bob@gmail.com"],
   },
+  {
+    title: "Team Runners",
+    description: "a group for weekly running meetups",
+    managerEmail: "manager@demo.com",
+    memberEmails: [
+      "manager@demo.com",
+      "member@demo.com",
+      "alice@gmail.com",
+      "bob@gmail.com",
+      "user6@gmail.com",
+      "user7@gmail.com",
+    ],
+    managerEmails: ["manager@demo.com"],
+  },
 ];
 
 type EventSeed = {
@@ -99,6 +113,8 @@ type EventSeed = {
   minute: number;
   location: string;
   capacity: number;
+  canceled?: boolean;
+  relativeMinutes?: number;
 };
 
 const EVENT_SEEDS: EventSeed[] = [
@@ -112,6 +128,18 @@ const EVENT_SEEDS: EventSeed[] = [
     minute: 30,
     location: "Sky Bar, Sofia",
     capacity: 12,
+  },
+  {
+    groupTitle: "City Explorers",
+    title: "Quick Lunch Meetup",
+    description: "Short meetup during lunch break",
+    eventType: "other",
+    daysFromToday: 0,
+    hour: 12,
+    minute: 30,
+    location: "Central Park, Sofia",
+    capacity: 8,
+    relativeMinutes: -30,
   },
   {
     groupTitle: "City Explorers",
@@ -159,6 +187,18 @@ const EVENT_SEEDS: EventSeed[] = [
   },
   {
     groupTitle: "Foodies United",
+    title: "Canceled Brunch",
+    description: "Canceled due to bad weather",
+    eventType: "dinner",
+    daysFromToday: 2,
+    hour: 11,
+    minute: 0,
+    location: "Cafe Central, Sofia",
+    capacity: 10,
+    canceled: true,
+  },
+  {
+    groupTitle: "Foodies United",
     title: "Italian Night at La Piazza",
     description: null,
     eventType: "dinner",
@@ -178,6 +218,17 @@ const EVENT_SEEDS: EventSeed[] = [
     minute: 30,
     location: "Sushi Bar Sakura, Sofia",
     capacity: 10,
+  },
+  {
+    groupTitle: "Team Runners",
+    title: "Sunday 5K Run",
+    description: "Easy 5k jog around the lake",
+    eventType: "sports",
+    daysFromToday: 1,
+    hour: 9,
+    minute: 0,
+    location: "Borisova Gradina, Sofia",
+    capacity: 12,
   },
 ];
 
@@ -230,8 +281,10 @@ const RSVP_SEEDS: RsvpSeed[] = [
       "carol@gmail.com",
       "eva@gmail.com",
       "user1@gmail.com",
+      "user2@gmail.com",
+      "user3@gmail.com",
     ],
-    extraSlots: { "eva@gmail.com": 1 },
+    extraSlots: { "bob@gmail.com": 2, "eva@gmail.com": 1, "user2@gmail.com": 1 },
   },
   {
     eventTitle: "Summer Picnic in the Park",
@@ -265,6 +318,17 @@ const RSVP_SEEDS: RsvpSeed[] = [
       "user2@gmail.com",
       "user3@gmail.com",
     ],
+  },
+  {
+    eventTitle: "Sunday 5K Run",
+    userEmails: [
+      "manager@demo.com",
+      "member@demo.com",
+      "alice@gmail.com",
+      "bob@gmail.com",
+      "user6@gmail.com",
+    ],
+    extraSlots: { "manager@demo.com": 1 },
   },
 ];
 
@@ -301,6 +365,13 @@ const COMMENT_SEEDS: CommentSeed[] = [
     ],
   },
   {
+    eventTitle: "Quick Lunch Meetup",
+    comments: [
+      { email: "alice@gmail.com", text: "I'll be there right after my meeting." },
+      { email: "user2@gmail.com", text: "Can we grab coffee nearby after?" },
+    ],
+  },
+  {
     eventTitle: "Italian Night at La Piazza",
     comments: [
       { email: "carol@gmail.com", text: "I've heard their pasta is incredible 🍝" },
@@ -332,6 +403,13 @@ const COMMENT_SEEDS: CommentSeed[] = [
       { email: "user1@gmail.com", text: "Can we make this a monthly tradition?" },
     ],
   },
+  {
+    eventTitle: "Sunday 5K Run",
+    comments: [
+      { email: "manager@demo.com", text: "Meeting point is by the main entrance." },
+      { email: "member@demo.com", text: "Excited for this!" },
+    ],
+  },
 ];
 
 function formatDate(daysFromToday: number): string {
@@ -342,6 +420,22 @@ function formatDate(daysFromToday: number): string {
 
 function formatTime(hour: number, minute: number): string {
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
+}
+
+function resolveEventDateTime(seed: EventSeed): { date: string; time: string } {
+  if (typeof seed.relativeMinutes === "number") {
+    const d = new Date();
+    d.setUTCMinutes(d.getUTCMinutes() + seed.relativeMinutes);
+    return {
+      date: d.toISOString().slice(0, 10),
+      time: d.toISOString().slice(11, 19),
+    };
+  }
+
+  return {
+    date: formatDate(seed.daysFromToday),
+    time: formatTime(seed.hour, seed.minute),
+  };
 }
 
 function generateInviteCode(): string {
@@ -416,23 +510,36 @@ async function seed() {
     }))
   );
 
+  const usedInviteGroupId = groupIdByTitle.get("City Explorers");
+  const usedByUserId = userIdByEmail.get("user1@gmail.com");
+  if (usedInviteGroupId && usedByUserId) {
+    await db
+      .update(groupInvitations)
+      .set({ usedAt: new Date(), usedByUserId })
+      .where(eq(groupInvitations.groupId, usedInviteGroupId));
+  }
+
   console.log("📅 Inserting events…");
   const insertedEvents = await db
     .insert(events)
     .values(
-      EVENT_SEEDS.map((e) => ({
-        groupId: groupIdByTitle.get(e.groupTitle)!,
-        title: e.title,
-        description: e.description,
-        eventType: e.eventType,
-        date: formatDate(e.daysFromToday),
-        time: formatTime(e.hour, e.minute),
-        location: e.location,
-        capacity: e.capacity,
-        createdBy: userIdByEmail.get(
-          GROUP_SEEDS.find((g) => g.title === e.groupTitle)!.managerEmail
-        )!,
-      }))
+      EVENT_SEEDS.map((e) => {
+        const { date, time } = resolveEventDateTime(e);
+        return {
+          groupId: groupIdByTitle.get(e.groupTitle)!,
+          title: e.title,
+          description: e.description,
+          eventType: e.eventType,
+          date,
+          time,
+          location: e.location,
+          capacity: e.capacity,
+          canceled: e.canceled ?? false,
+          createdBy: userIdByEmail.get(
+            GROUP_SEEDS.find((g) => g.title === e.groupTitle)!.managerEmail
+          )!,
+        };
+      })
     )
     .returning({ id: events.id, title: events.title });
 
