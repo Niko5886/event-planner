@@ -153,3 +153,84 @@ export function listEventsRequest(page = 1, limit = 20) {
     `/events?page=${page}&limit=${limit}`
   );
 }
+
+export type EventAttendee = {
+  userId: number;
+  name: string;
+  photoUrl: string | null;
+  extraSlots: number;
+  rsvpAt: string;
+};
+
+export type EventCommentAuthor = {
+  id: number;
+  name: string;
+  photoUrl: string | null;
+};
+
+export type EventComment = {
+  id: number;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+  author: EventCommentAuthor;
+};
+
+export type EventDetails = {
+  id: number;
+  title: string;
+  description: string | null;
+  type: string;
+  date: string;
+  time: string;
+  location: string;
+  capacity: number;
+  canceled: boolean;
+  state: EventState;
+  capacityState: 'under' | 'full' | 'over';
+  attendeesCount: number;
+  groupId: number;
+  groupTitle: string;
+  createdBy: { id: number; name: string };
+  isRsvped: boolean;
+  userExtraSlots: number;
+  canManage: boolean;
+  attendees: EventAttendee[];
+  comments: EventComment[];
+};
+
+export function getEventRequest(id: number) {
+  return apiRequest<EventDetails>(`/events/${id}`);
+}
+
+export function rsvpEventRequest(id: number) {
+  return apiRequest<{ ok: true; isRsvped: true }>(`/events/${id}/rsvp`, {
+    method: 'POST',
+  });
+}
+
+export function leaveEventRequest(id: number) {
+  return apiRequest<{ ok: true; isRsvped: false }>(`/events/${id}/leave`, {
+    method: 'POST',
+  });
+}
+
+export function setExtraSlotsRequest(id: number, extraSlots: number) {
+  return apiRequest<{ ok: true; extraSlots: number }>(`/events/${id}/slots`, {
+    method: 'POST',
+    body: { extraSlots },
+  });
+}
+
+export function listCommentsRequest(id: number, page = 1, limit = 20) {
+  return apiRequest<PagedResponse<EventComment>>(
+    `/events/${id}/comments?page=${page}&limit=${limit}`
+  );
+}
+
+export function postCommentRequest(id: number, text: string) {
+  return apiRequest<EventComment>(`/events/${id}/comments`, {
+    method: 'POST',
+    body: { text },
+  });
+}
