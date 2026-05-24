@@ -25,6 +25,16 @@ Create `event-planner-mobile/.env` with:
 EXPO_PUBLIC_API_BASE_URL=http://localhost:3000/api
 ```
 
+## Sample Credentials
+
+Use these demo accounts after seeding the database:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@demo.com | demo123 |
+| Group Manager | manager@demo.com | demo123 |
+| Group Member | member@demo.com | demo123 |
+
 ## More Documentation
 
 See the root `README.md` for architecture, schema, and full setup instructions.
