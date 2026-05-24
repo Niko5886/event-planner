@@ -15,40 +15,60 @@ import { EventCard } from '@/components/EventCard';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError, EventListItem, listEventsRequest } from '@/lib/api';
 
+const PAGE_SIZE = 20;
+
 export default function EventsScreen() {
   const { signOut, token, user } = useAuth();
   const router = useRouter();
 
   const [events, setEvents] = useState<EventListItem[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
-    if (mode === 'refresh') setRefreshing(true);
-    else setLoading(true);
-    setError(null);
+  const fetchPage = useCallback(
+    async (pageToLoad: number, mode: 'initial' | 'refresh' | 'more') => {
+      if (mode === 'initial') setLoading(true);
+      if (mode === 'refresh') setRefreshing(true);
+      if (mode === 'more') setLoadingMore(true);
+      setError(null);
 
-    try {
-      const result = await listEventsRequest(1, 50);
-      setEvents(result.data);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError('Something went wrong while loading events.');
+      try {
+        const result = await listEventsRequest(pageToLoad, PAGE_SIZE);
+        setTotalPages(result.totalPages);
+        setPage(result.page);
+        setEvents((prev) =>
+          mode === 'more' ? [...prev, ...result.data] : result.data
+        );
+      } catch (err) {
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError('Something went wrong while loading events.');
+        }
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+        setLoadingMore(false);
       }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
-    if (token) {
-      load('initial');
-    }
-  }, [token, load]);
+    if (token) fetchPage(1, 'initial');
+  }, [token, fetchPage]);
+
+  const onRefresh = () => fetchPage(1, 'refresh');
+
+  const onEndReached = () => {
+    if (loading || loadingMore || refreshing) return;
+    if (page >= totalPages) return;
+    fetchPage(page + 1, 'more');
+  };
 
   const onLogout = async () => {
     try {
@@ -57,6 +77,9 @@ export default function EventsScreen() {
       router.replace('/');
     }
   };
+
+  const openEvent = (id: number) =>
+    router.push({ pathname: '/event-details', params: { id: String(id) } });
 
   return (
     <View style={styles.container}>
@@ -77,15 +100,12 @@ export default function EventsScreen() {
             data={events}
             keyExtractor={(item) => String(item.id)}
             renderItem={({ item }) => (
-              <EventCard
-                event={item}
-                onPress={() =>
-                  router.push({ pathname: '/event-details', params: { id: String(item.id) } })
-                }
-              />
+              <EventCard event={item} onPress={() => openEvent(item.id)} />
             )}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
-            contentContainerStyle={events.length === 0 ? styles.emptyContent : styles.listContent}
+            contentContainerStyle={
+              events.length === 0 ? styles.emptyContent : styles.listContent
+            }
             ListEmptyComponent={
               error ? null : (
                 <View style={styles.center}>
@@ -93,8 +113,17 @@ export default function EventsScreen() {
                 </View>
               )
             }
+            ListFooterComponent={
+              loadingMore ? (
+                <View style={styles.footerLoader}>
+                  <ActivityIndicator />
+                </View>
+              ) : null
+            }
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.4}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={() => load('refresh')} />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           />
         )}
@@ -118,5 +147,6 @@ const styles = StyleSheet.create({
   emptyContent: { flexGrow: 1 },
   separator: { height: 12 },
   emptyText: { fontSize: 15, color: '#6B7280' },
+  footerLoader: { paddingVertical: 16, alignItems: 'center' },
   footer: { paddingTop: 12 },
 });
