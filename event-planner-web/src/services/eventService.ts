@@ -346,7 +346,6 @@ export async function rsvpToEvent(input: {
       date: events.date,
       time: events.time,
       canceled: events.canceled,
-      capacity: events.capacity,
     })
     .from(events)
     .where(eq(events.id, input.eventId))
@@ -374,24 +373,10 @@ export async function rsvpToEvent(input: {
     throw new EventError("already_rsvped");
   }
 
-    const extra = Number(input.extraSlots ?? 0);
-    if (!Number.isInteger(extra) || extra < 0) {
-      throw new EventError("invalid_input");
-    }
-
-    // compute current attendees
-    const [current] = await db
-      .select({
-        attendees: sql<number>`COALESCE(SUM(1 + ${eventRsvps.extraSlots})::int, 0)`,
-      })
-      .from(eventRsvps)
-      .where(eq(eventRsvps.eventId, input.eventId));
-
-    const currentAttendees = Number(current?.attendees ?? 0);
-    const newTotal = currentAttendees + 1 + extra;
-    if (newTotal > Number(event.capacity)) {
-      throw new EventError("invalid_input");
-    }
+  const extra = Number(input.extraSlots ?? 0);
+  if (!Number.isInteger(extra) || extra < 0) {
+    throw new EventError("invalid_input");
+  }
 
   await db.insert(eventRsvps).values({
     eventId: input.eventId,
@@ -448,7 +433,6 @@ export async function updateRsvpSlots(input: {
       date: events.date,
       time: events.time,
       canceled: events.canceled,
-      capacity: events.capacity,
     })
     .from(events)
     .where(eq(events.id, input.eventId))
@@ -478,22 +462,6 @@ export async function updateRsvpSlots(input: {
 
   const extra = Number(input.extraSlots ?? 0);
   if (!Number.isInteger(extra) || extra < 0) {
-    throw new EventError("invalid_input");
-  }
-
-  const currentExtra = Number(existing?.extraSlots ?? 0);
-
-  // compute current attendees
-  const [current] = await db
-    .select({
-      attendees: sql<number>`COALESCE(SUM(1 + ${eventRsvps.extraSlots})::int, 0)`,
-    })
-    .from(eventRsvps)
-    .where(eq(eventRsvps.eventId, input.eventId));
-  const currentAttendees = Number(current?.attendees ?? 0);
-
-  const newTotal = currentAttendees - currentExtra + extra; // replace their extraSlots
-  if (newTotal > Number(event.capacity)) {
     throw new EventError("invalid_input");
   }
 

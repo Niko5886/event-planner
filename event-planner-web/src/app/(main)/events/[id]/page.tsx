@@ -201,8 +201,7 @@ export default async function EventDetailPage({
             isRsvped={event.isRsvped}
             canManage={event.canManage}
             isOpen={isOpen}
-            capacity={event.capacity}
-            attendees={event.attendees}
+            userExtraSlots={event.userExtraSlots}
           />
         </div>
       </section>

@@ -16,6 +16,7 @@ import {
   deleteEventAction,
   leaveEventAction,
   rsvpEventAction,
+  updateSlotsAction,
   type EventActionState,
 } from "@/lib/actions/events";
 
@@ -26,8 +27,7 @@ type Props = {
   isRsvped: boolean;
   canManage: boolean;
   isOpen: boolean;
-  capacity: number;
-  attendees: number;
+  userExtraSlots: number;
 };
 
 export function EventActions({
@@ -35,8 +35,7 @@ export function EventActions({
   isRsvped,
   canManage,
   isOpen,
-  capacity,
-  attendees,
+  userExtraSlots,
 }: Props) {
   const [rsvpState, rsvpAction, rsvpPending] = useActionState(
     rsvpEventAction,
@@ -46,19 +45,25 @@ export function EventActions({
     leaveEventAction,
     initialState
   );
+  const [slotsState, slotsAction, slotsPending] = useActionState(
+    updateSlotsAction,
+    initialState
+  );
 
-  const remainingSeats = Math.max(0, capacity - attendees);
+  const canDecSlots = userExtraSlots > 0;
+  const canIncSlots = userExtraSlots < 3;
 
   const feedback =
-    rsvpState.error || leaveState.error
+    rsvpState.error || leaveState.error || slotsState.error
       ? {
           type: "error" as const,
-          text: rsvpState.error || leaveState.error || "",
+          text: rsvpState.error || leaveState.error || slotsState.error || "",
         }
-      : rsvpState.success || leaveState.success
+      : rsvpState.success || leaveState.success || slotsState.success
       ? {
           type: "success" as const,
-          text: rsvpState.success || leaveState.success || "",
+          text:
+            rsvpState.success || leaveState.success || slotsState.success || "",
         }
       : null;
 
@@ -70,7 +75,7 @@ export function EventActions({
             <input type="hidden" name="eventId" value={eventId} />
             <button
               type="submit"
-              disabled={!isOpen || rsvpPending || remainingSeats <= 0}
+              disabled={!isOpen || rsvpPending}
               className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {rsvpPending ? (
@@ -82,21 +87,66 @@ export function EventActions({
             </button>
           </form>
         ) : (
-          <form action={leaveAction}>
-            <input type="hidden" name="eventId" value={eventId} />
-            <button
-              type="submit"
-              disabled={!isOpen || leavePending}
-              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {leavePending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="h-4 w-4" />
-              )}
-              {leavePending ? "Leaving…" : "Leave"}
-            </button>
-          </form>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Extra slots
+              </span>
+              <div className="flex items-center gap-2">
+                <form action={slotsAction}>
+                  <input type="hidden" name="eventId" value={eventId} />
+                  <input
+                    type="hidden"
+                    name="extraSlots"
+                    value={String(userExtraSlots - 1)}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!isOpen || slotsPending || !canDecSlots}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label="Decrease extra slots"
+                  >
+                    −
+                  </button>
+                </form>
+                <span className="min-w-[1.5rem] text-center text-sm font-semibold text-slate-700">
+                  {userExtraSlots}
+                </span>
+                <form action={slotsAction}>
+                  <input type="hidden" name="eventId" value={eventId} />
+                  <input
+                    type="hidden"
+                    name="extraSlots"
+                    value={String(userExtraSlots + 1)}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!isOpen || slotsPending || !canIncSlots}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label="Increase extra slots"
+                  >
+                    +
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <form action={leaveAction}>
+              <input type="hidden" name="eventId" value={eventId} />
+              <button
+                type="submit"
+                disabled={!isOpen || leavePending}
+                className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {leavePending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <LogOut className="h-4 w-4" />
+                )}
+                {leavePending ? "Leaving…" : "Leave"}
+              </button>
+            </form>
+          </div>
         )}
 
         {canManage && (

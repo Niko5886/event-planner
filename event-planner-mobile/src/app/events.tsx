@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator,
   FlatList,
@@ -61,6 +62,13 @@ export default function EventsScreen() {
   useEffect(() => {
     if (token) fetchPage(1, 'initial');
   }, [token, fetchPage]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!token) return;
+      fetchPage(1, 'refresh');
+    }, [token, fetchPage])
+  );
 
   const onRefresh = () => fetchPage(1, 'refresh');
 
