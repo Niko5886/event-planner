@@ -74,6 +74,38 @@ export type AuthResponse = {
   user: AuthUser;
 };
 
+type JwtPayload = {
+  userId: number;
+  name: string;
+  email: string;
+  role: string;
+  exp?: number;
+};
+
+export function decodeUserFromToken(token: string): AuthUser | null {
+  try {
+    const part = token.split('.')[1];
+    if (!part) return null;
+    const base64 = part.replace(/-/g, '+').replace(/_/g, '/').padEnd(
+      part.length + ((4 - (part.length % 4)) % 4),
+      '='
+    );
+    const json = typeof atob === 'function'
+      ? atob(base64)
+      : Buffer.from(base64, 'base64').toString('utf-8');
+    const payload = JSON.parse(json) as JwtPayload;
+    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+    return {
+      id: payload.userId,
+      name: payload.name ?? payload.email,
+      email: payload.email,
+      role: payload.role,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function loginRequest(email: string, password: string) {
   return apiRequest<AuthResponse>('/auth/login', {
     method: 'POST',
@@ -88,4 +120,36 @@ export function registerRequest(name: string, email: string, password: string) {
     body: { name, email, password },
     auth: false,
   });
+}
+
+export type EventState = 'upcoming' | 'ongoing' | 'past';
+
+export type EventListItem = {
+  id: number;
+  title: string;
+  description: string | null;
+  type: string;
+  date: string;
+  time: string;
+  location: string;
+  capacity: number;
+  canceled: boolean;
+  state: EventState;
+  attendees: number;
+  groupId: number;
+  groupTitle: string;
+};
+
+export type PagedResponse<T> = {
+  data: T[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export function listEventsRequest(page = 1, limit = 20) {
+  return apiRequest<PagedResponse<EventListItem>>(
+    `/events?page=${page}&limit=${limit}`
+  );
 }

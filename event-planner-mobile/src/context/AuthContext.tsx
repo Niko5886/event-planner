@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
-import { AuthUser, loginRequest, registerRequest } from '@/lib/api';
+import { AuthUser, decodeUserFromToken, loginRequest, registerRequest } from '@/lib/api';
 import { deleteToken, getToken, setToken } from '@/lib/secureStorage';
 
 type AuthState = {
@@ -23,7 +23,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (async () => {
       const stored = await getToken();
       if (stored) {
-        setTokenState(stored);
+        const decoded = decodeUserFromToken(stored);
+        if (decoded) {
+          setTokenState(stored);
+          setUser(decoded);
+        } else {
+          await deleteToken();
+        }
       }
       setIsReady(true);
     })();
