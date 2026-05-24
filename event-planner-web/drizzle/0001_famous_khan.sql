@@ -1,0 +1,2 @@
+ALTER TABLE "event_rsvps" DROP CONSTRAINT "event_rsvps_extra_slots_check";--> statement-breakpoint
+ALTER TABLE "event_rsvps" ADD CONSTRAINT "event_rsvps_extra_slots_check" CHECK ("event_rsvps"."extra_slots" between 0 and 1000);

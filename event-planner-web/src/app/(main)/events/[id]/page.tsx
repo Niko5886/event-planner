@@ -91,6 +91,10 @@ export default async function EventDetailPage({
   const capacity = getCapacityState(event.attendees, event.capacity);
   const isOpen = isEventActive(event.date, event.time, event.canceled);
   const comments = await getEventComments(event.id);
+  const maxExtraSlots = Math.max(
+    0,
+    event.capacity - event.attendees + event.userExtraSlots
+  );
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -202,6 +206,7 @@ export default async function EventDetailPage({
             canManage={event.canManage}
             isOpen={isOpen}
             userExtraSlots={event.userExtraSlots}
+            maxExtraSlots={maxExtraSlots}
           />
         </div>
       </section>

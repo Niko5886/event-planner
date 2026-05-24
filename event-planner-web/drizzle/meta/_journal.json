@@ -8,6 +8,13 @@
       "when": 1779449268911,
       "tag": "0000_worried_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779630979019,
+      "tag": "0001_famous_khan",
+      "breakpoints": true
     }
   ]
 }

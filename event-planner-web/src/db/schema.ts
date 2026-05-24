@@ -134,7 +134,7 @@ export const eventRsvps = pgTable(
     userIdIdx: index("event_rsvps_user_id_idx").on(table.userId),
     extraSlotsCheck: check(
       "event_rsvps_extra_slots_check",
-      sql`${table.extraSlots} between 0 and 3`
+      sql`${table.extraSlots} between 0 and 1000`
     ),
   })
 );

@@ -28,6 +28,7 @@ type Props = {
   canManage: boolean;
   isOpen: boolean;
   userExtraSlots: number;
+  maxExtraSlots: number;
 };
 
 export function EventActions({
@@ -36,6 +37,7 @@ export function EventActions({
   canManage,
   isOpen,
   userExtraSlots,
+  maxExtraSlots,
 }: Props) {
   const [rsvpState, rsvpAction, rsvpPending] = useActionState(
     rsvpEventAction,
@@ -51,7 +53,7 @@ export function EventActions({
   );
 
   const canDecSlots = userExtraSlots > 0;
-  const canIncSlots = userExtraSlots < 3;
+  const canIncSlots = userExtraSlots < maxExtraSlots;
 
   const feedback =
     rsvpState.error || leaveState.error || slotsState.error
@@ -90,7 +92,7 @@ export function EventActions({
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Extra slots
+                Extra slots (available: {maxExtraSlots})
               </span>
               <div className="flex items-center gap-2">
                 <form action={slotsAction}>

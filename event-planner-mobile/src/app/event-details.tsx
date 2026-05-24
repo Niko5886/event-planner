@@ -24,7 +24,6 @@ import {
   setExtraSlotsRequest,
 } from '@/lib/api';
 
-const MAX_EXTRA_SLOTS = 3;
 const MIN_EXTRA_SLOTS = 0;
 
 const STATE_LABEL: Record<string, string> = {
@@ -57,6 +56,10 @@ export default function EventDetailsScreen() {
 
   const [newComment, setNewComment] = useState('');
   const [postingComment, setPostingComment] = useState(false);
+
+  const maxExtraSlots = event
+    ? Math.max(0, event.capacity - event.attendeesCount + event.userExtraSlots)
+    : 0;
 
   const load = useCallback(
     async (mode: 'initial' | 'refresh' = 'initial') => {
@@ -108,7 +111,7 @@ export default function EventDetailsScreen() {
   const onChangeSlots = (delta: number) => {
     if (!event) return;
     const next = event.userExtraSlots + delta;
-    if (next < MIN_EXTRA_SLOTS || next > MAX_EXTRA_SLOTS) return;
+    if (next < MIN_EXTRA_SLOTS || next > maxExtraSlots) return;
     runAction(() => setExtraSlotsRequest(eventId, next));
   };
 
@@ -197,7 +200,9 @@ export default function EventDetailsScreen() {
               <Text style={styles.rsvpText}>You&apos;re going! 🎉</Text>
 
               <View style={styles.slotsRow}>
-                <Text style={styles.slotsLabel}>Extra slots for friends</Text>
+                <Text style={styles.slotsLabel}>
+                  Extra slots for friends (available: {maxExtraSlots})
+                </Text>
                 <View style={styles.slotsControls}>
                   <Button
                     title="−"
@@ -210,7 +215,7 @@ export default function EventDetailsScreen() {
                     title="+"
                     variant="secondary"
                     onPress={() => onChangeSlots(1)}
-                    disabled={actionLoading || event.userExtraSlots >= MAX_EXTRA_SLOTS}
+                    disabled={actionLoading || event.userExtraSlots >= maxExtraSlots}
                   />
                 </View>
               </View>

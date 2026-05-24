@@ -3,11 +3,10 @@ import {
   badRequest,
   eventErrorResponse,
   jsonOk,
+  jsonError,
   unauthorized,
 } from "@/lib/apiResponse";
 import { updateRsvpSlots } from "@/services/eventService";
-
-const MAX_EXTRA_SLOTS = 3;
 
 export async function POST(
   req: Request,
@@ -31,14 +30,8 @@ export async function POST(
 
   const raw = (body as { extraSlots?: unknown })?.extraSlots;
   const extraSlots = Number(raw);
-  if (
-    !Number.isInteger(extraSlots) ||
-    extraSlots < 0 ||
-    extraSlots > MAX_EXTRA_SLOTS
-  ) {
-    return badRequest(
-      `Field 'extraSlots' must be an integer between 0 and ${MAX_EXTRA_SLOTS}.`
-    );
+  if (!Number.isInteger(extraSlots) || extraSlots < 0) {
+    return badRequest("Field 'extraSlots' must be a non-negative integer.");
   }
 
   try {
@@ -46,7 +39,11 @@ export async function POST(
   } catch (err) {
     const res = eventErrorResponse(err);
     if (res) return res;
-    throw err;
+    // Log unexpected error for local debugging and return its message in the response
+    // so the client shows the underlying cause during development.
+    console.error("/api/events/[id]/slots unexpected error:", err);
+    const msg = err instanceof Error ? err.message : "Internal server error.";
+    return jsonError(500, "server_error", msg);
   }
 
   return jsonOk({ ok: true, extraSlots });
