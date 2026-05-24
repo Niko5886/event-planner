@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
 import {
   EventError,
+  createEvent,
   deleteEvent,
   leaveEvent,
   rsvpToEvent,
@@ -110,6 +111,62 @@ export async function leaveEventAction(
   revalidatePath(`/events/${eventId}`);
   revalidatePath("/dashboard");
   return { error: null, success: "You've left this event." };
+}
+
+export async function createEventAction(
+  _prev: EventActionState,
+  formData: FormData
+): Promise<EventActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const groupId = Number(formData.get("groupId"));
+  if (!Number.isInteger(groupId) || groupId <= 0) {
+    return { error: "Invalid group." };
+  }
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim() || null;
+  const eventType = String(formData.get("eventType") ?? "").trim() || null;
+  const date = String(formData.get("date") ?? "").trim();
+  const time = String(formData.get("time") ?? "").trim();
+  const location = String(formData.get("location") ?? "").trim() || null;
+  const capacityRaw = String(formData.get("capacity") ?? "").trim();
+  const capacity = capacityRaw ? Number(capacityRaw) : 12;
+
+  if (!title) {
+    return { error: "Please enter an event title." };
+  }
+  if (!date || !time) {
+    return { error: "Please provide both date and time." };
+  }
+  if (!Number.isFinite(capacity)) {
+    return { error: "Invalid capacity." };
+  }
+
+  let created;
+  try {
+    created = await createEvent({
+      groupId,
+      userId: user.userId,
+      role: user.role,
+      title,
+      description,
+      eventType,
+      date,
+      time,
+      location,
+      capacity,
+    });
+  } catch (err) {
+    return { error: mapEventError(err) };
+  }
+
+  revalidatePath(`/groups/${groupId}`);
+  revalidatePath("/dashboard");
+  redirect(`/events/${created.id}`);
 }
 
 export async function updateEventAction(

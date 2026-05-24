@@ -592,6 +592,80 @@ function validateEventInput(input: {
   }
 }
 
+export type CreateEventInput = {
+  groupId: number;
+  userId: number;
+  role: "user" | "admin";
+  title: string;
+  description: string | null;
+  eventType: string | null;
+  date: string;
+  time: string;
+  location: string | null;
+  capacity: number;
+};
+
+export async function createEvent(
+  input: CreateEventInput
+): Promise<{ id: number }> {
+  if (!Number.isInteger(input.groupId) || input.groupId <= 0) {
+    throw new EventError("invalid_input");
+  }
+
+  const isAdmin = input.role === "admin";
+  if (!isAdmin) {
+    const [membership] = await db
+      .select({ isManager: groupMembers.isManager })
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, input.groupId),
+          eq(groupMembers.userId, input.userId)
+        )
+      )
+      .limit(1);
+
+    if (!membership || !membership.isManager) {
+      throw new EventError("forbidden");
+    }
+  }
+
+  const title = input.title.trim();
+  const description = input.description?.trim() || null;
+  const eventType = input.eventType?.trim() || null;
+  const location = input.location?.trim() || null;
+
+  validateEventInput({
+    title,
+    description,
+    location,
+    date: input.date,
+    time: input.time,
+    capacity: input.capacity,
+  });
+
+  const time =
+    /^\d{2}:\d{2}$/.test(input.time) ? `${input.time}:00` : input.time;
+
+  const [created] = await db
+    .insert(events)
+    .values({
+      groupId: input.groupId,
+      title,
+      description,
+      eventType,
+      date: input.date,
+      time,
+      location,
+      capacity: input.capacity,
+      canceled: false,
+      createdBy: input.userId,
+    })
+    .returning({ id: events.id });
+
+  return { id: created.id };
+}
+
 export async function updateEvent(input: UpdateEventInput): Promise<void> {
   await loadEventForManagement(input);
 

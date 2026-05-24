@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Crown, Users } from "lucide-react";
+import { ArrowLeft, CalendarPlus, Crown, Users } from "lucide-react";
 import { DeleteGroupButton } from "./DeleteGroupButton";
 import { InviteLink } from "./InviteLink";
 import { getCurrentUser } from "@/lib/auth";
@@ -57,6 +57,15 @@ export default async function GroupDetailsPage({
               <Crown className="h-3.5 w-3.5" />
               You are a manager
             </span>
+          )}
+          {(group.isManager || user.role === "admin") && (
+            <Link
+              href={`/groups/${group.id}/events/new`}
+              className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              Create event
+            </Link>
           )}
           {canDelete && (
             <DeleteGroupButton groupId={group.id} groupTitle={group.title} />
