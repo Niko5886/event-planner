@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE_NAME } from "./lib/authConstants";
+import { AUTH_COOKIE_NAME } from "./lib/auth";
 
 const PUBLIC_PATHS = new Set(["/", "/login", "/register"]);
 

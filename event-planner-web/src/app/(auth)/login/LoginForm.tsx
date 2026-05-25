@@ -39,7 +39,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     label: "Manager",
     role: "Group Manager",
-    email: "alice@gmail.com",
+    email: "hristo.yordanov40@example.com",
     password: "demo123",
     description: "Manages groups and creates events.",
     icon: UserCog,
@@ -48,7 +48,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     label: "Member",
     role: "Group Member",
-    email: "carol@gmail.com",
+    email: "ivan.marinov39@example.com",
     password: "demo123",
     description: "RSVPs and comments on events.",
     icon: UserIcon,

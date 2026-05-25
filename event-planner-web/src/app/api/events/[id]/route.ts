@@ -11,7 +11,7 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await authenticateRequest(req);
+  const user = authenticateRequest(req);
   if (!user) return unauthorized();
 
   const { id } = await params;

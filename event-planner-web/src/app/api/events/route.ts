@@ -5,7 +5,7 @@ import { getActiveEventsPaged } from "@/services/eventService";
 import { getEventState } from "@/lib/eventState";
 
 export async function GET(req: Request) {
-  const user = await authenticateRequest(req);
+  const user = authenticateRequest(req);
   if (!user) return unauthorized();
 
   const { searchParams } = new URL(req.url);

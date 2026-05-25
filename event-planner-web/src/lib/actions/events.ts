@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getCurrentUser } from "@/lib/auth";
+import { clearAuthCookie, getCurrentUser } from "@/lib/auth";
 import {
   EventError,
   createEvent,
@@ -13,6 +13,7 @@ import {
   updateRsvpSlots,
   updateEvent,
 } from "@/services/eventService";
+import { getUserById } from "@/services/userService";
 
 export type EventActionState = {
   error: string | null;
@@ -282,8 +283,14 @@ export async function postEventCommentAction(
   _prev: CommentActionState,
   formData: FormData
 ): Promise<CommentActionState> {
-  const user = await getCurrentUser();
-  if (!user) {
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) {
+    redirect("/login");
+  }
+
+  const dbUser = await getUserById(sessionUser.userId);
+  if (!dbUser || dbUser.email !== sessionUser.email) {
+    await clearAuthCookie();
     redirect("/login");
   }
 
@@ -297,7 +304,7 @@ export async function postEventCommentAction(
   }
 
   try {
-    await postEventComment({ eventId, userId: user.userId, text });
+    await postEventComment({ eventId, userId: dbUser.id, text });
   } catch (err) {
     return { error: mapCommentError(err) };
   }

@@ -1,5 +1,4 @@
 import { verifyToken, type JwtPayload } from "./jwt";
-import { getUserById } from "@/services/userService";
 
 export type ApiUser = JwtPayload;
 
@@ -13,21 +12,8 @@ export function getBearerToken(req: Request): string | null {
   return token || null;
 }
 
-export async function authenticateRequest(req: Request): Promise<ApiUser | null> {
+export function authenticateRequest(req: Request): ApiUser | null {
   const token = getBearerToken(req);
   if (!token) return null;
-  const payload = verifyToken(token);
-  if (!payload) return null;
-
-  const dbUser = await getUserById(payload.userId);
-  if (!dbUser || dbUser.email !== payload.email) {
-    return null;
-  }
-
-  return {
-    userId: dbUser.id,
-    name: dbUser.name,
-    email: dbUser.email,
-    role: dbUser.role,
-  };
+  return verifyToken(token);
 }
