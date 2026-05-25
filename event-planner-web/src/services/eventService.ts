@@ -100,28 +100,18 @@ const baseSelect = {
   attendees: attendeesExpr,
 };
 
-export async function getActiveEventsForUser(
-  userId: number
-): Promise<EventCardData[]> {
+export async function getActiveEvents(): Promise<EventCardData[]> {
   return db
     .select(baseSelect)
     .from(events)
     .innerJoin(groups, eq(groups.id, events.groupId))
-    .innerJoin(
-      groupMembers,
-      and(
-        eq(groupMembers.groupId, events.groupId),
-        eq(groupMembers.userId, userId)
-      )
-    )
     .where(
       and(eq(events.canceled, false), sql`${eventEndUtcExpr} > ${nowUtcExpr}`)
     )
     .orderBy(asc(events.date), asc(events.time));
 }
 
-export async function getActiveEventsForUserPaged(input: {
-  userId: number;
+export async function getActiveEventsPaged(input: {
   limit: number;
   offset: number;
 }): Promise<{ items: EventCardData[]; total: number }> {
@@ -134,13 +124,6 @@ export async function getActiveEventsForUserPaged(input: {
     .select(baseSelect)
     .from(events)
     .innerJoin(groups, eq(groups.id, events.groupId))
-    .innerJoin(
-      groupMembers,
-      and(
-        eq(groupMembers.groupId, events.groupId),
-        eq(groupMembers.userId, input.userId)
-      )
-    )
     .where(whereClause)
     .orderBy(asc(events.date), asc(events.time))
     .limit(input.limit)
@@ -149,32 +132,16 @@ export async function getActiveEventsForUserPaged(input: {
   const [countRow] = await db
     .select({ total: sql<number>`COUNT(*)::int` })
     .from(events)
-    .innerJoin(
-      groupMembers,
-      and(
-        eq(groupMembers.groupId, events.groupId),
-        eq(groupMembers.userId, input.userId)
-      )
-    )
     .where(whereClause);
 
   return { items, total: Number(countRow?.total ?? 0) };
 }
 
-export async function getPastAndCanceledEventsForUser(
-  userId: number
-): Promise<EventCardData[]> {
+export async function getPastAndCanceledEvents(): Promise<EventCardData[]> {
   return db
     .select(baseSelect)
     .from(events)
     .innerJoin(groups, eq(groups.id, events.groupId))
-    .innerJoin(
-      groupMembers,
-      and(
-        eq(groupMembers.groupId, events.groupId),
-        eq(groupMembers.userId, userId)
-      )
-    )
     .where(
       or(eq(events.canceled, true), sql`${eventEndUtcExpr} <= ${nowUtcExpr}`)
     )

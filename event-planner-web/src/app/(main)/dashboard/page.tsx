@@ -2,8 +2,8 @@ import { CalendarCheck, CalendarX } from "lucide-react";
 import { EventCard } from "@/components/EventCard";
 import { getCurrentUser } from "@/lib/auth";
 import {
-  getActiveEventsForUser,
-  getPastAndCanceledEventsForUser,
+  getActiveEvents,
+  getPastAndCanceledEvents,
 } from "@/services/eventService";
 
 export const metadata = {
@@ -14,8 +14,8 @@ export default async function DashboardPage() {
   const user = (await getCurrentUser())!;
 
   const [activeEvents, pastEvents] = await Promise.all([
-    getActiveEventsForUser(user.userId),
-    getPastAndCanceledEventsForUser(user.userId),
+    getActiveEvents(),
+    getPastAndCanceledEvents(),
   ]);
 
   return (

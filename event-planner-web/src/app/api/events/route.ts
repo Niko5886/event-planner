@@ -1,7 +1,7 @@
 import { authenticateRequest } from "@/lib/apiAuth";
 import { pagedResponse, parsePaging } from "@/lib/apiPaging";
 import { jsonOk, unauthorized } from "@/lib/apiResponse";
-import { getActiveEventsForUserPaged } from "@/services/eventService";
+import { getActiveEventsPaged } from "@/services/eventService";
 import { getEventState } from "@/lib/eventState";
 
 export async function GET(req: Request) {
@@ -11,8 +11,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const paging = parsePaging(searchParams);
 
-  const { items, total } = await getActiveEventsForUserPaged({
-    userId: user.userId,
+  const { items, total } = await getActiveEventsPaged({
     limit: paging.limit,
     offset: paging.offset,
   });
