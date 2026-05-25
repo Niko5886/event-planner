@@ -264,6 +264,15 @@ export async function getEventCommentsPaged(input: {
   return { items, total: Number(countRow?.total ?? 0) };
 }
 
+export async function getEventCommentsCount(eventId: number): Promise<number> {
+  const [row] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(eventComments)
+    .where(eq(eventComments.eventId, eventId));
+
+  return Number(row?.total ?? 0);
+}
+
 export async function postEventComment(input: {
   eventId: number;
   userId: number;
@@ -326,6 +335,34 @@ export async function getEventAttendees(
     .innerJoin(users, eq(users.id, eventRsvps.userId))
     .where(eq(eventRsvps.eventId, eventId))
     .orderBy(asc(eventRsvps.rsvpAt), asc(eventRsvps.id));
+}
+
+export async function getEventAttendeesPaged(input: {
+  eventId: number;
+  limit: number;
+  offset: number;
+}): Promise<{ items: EventAttendee[]; total: number }> {
+  const items = await db
+    .select({
+      userId: eventRsvps.userId,
+      name: users.name,
+      photoUrl: users.photoUrl,
+      extraSlots: eventRsvps.extraSlots,
+      rsvpAt: eventRsvps.rsvpAt,
+    })
+    .from(eventRsvps)
+    .innerJoin(users, eq(users.id, eventRsvps.userId))
+    .where(eq(eventRsvps.eventId, input.eventId))
+    .orderBy(asc(eventRsvps.rsvpAt), asc(eventRsvps.id))
+    .limit(input.limit)
+    .offset(input.offset);
+
+  const [countRow] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(eventRsvps)
+    .where(eq(eventRsvps.eventId, input.eventId));
+
+  return { items, total: Number(countRow?.total ?? 0) };
 }
 
 export async function rsvpToEvent(input: {

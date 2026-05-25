@@ -16,15 +16,21 @@ import { CommentList } from '@/components/CommentList';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import {
   ApiError,
+  EventAttendee,
+  EventComment,
   EventDetails,
   getEventRequest,
   leaveEventRequest,
+  listAttendeesRequest,
+  listCommentsRequest,
   postCommentRequest,
   rsvpEventRequest,
   setExtraSlotsRequest,
 } from '@/lib/api';
 
 const MIN_EXTRA_SLOTS = 0;
+const ATTENDEES_PAGE_SIZE = 10;
+const COMMENTS_PAGE_SIZE = 10;
 
 const STATE_LABEL: Record<string, string> = {
   upcoming: 'Upcoming',
@@ -54,6 +60,16 @@ export default function EventDetailsScreen() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [attendees, setAttendees] = useState<EventAttendee[]>([]);
+  const [attendeesPage, setAttendeesPage] = useState(1);
+  const [attendeesTotalPages, setAttendeesTotalPages] = useState(1);
+  const [attendeesLoadingMore, setAttendeesLoadingMore] = useState(false);
+
+  const [comments, setComments] = useState<EventComment[]>([]);
+  const [commentsPage, setCommentsPage] = useState(1);
+  const [commentsTotalPages, setCommentsTotalPages] = useState(1);
+  const [commentsLoadingMore, setCommentsLoadingMore] = useState(false);
+
   const [joinEnabled, setJoinEnabled] = useState(false);
 
   const [newComment, setNewComment] = useState('');
@@ -76,8 +92,18 @@ export default function EventDetailsScreen() {
       setError(null);
 
       try {
-        const data = await getEventRequest(eventId);
-        setEvent(data);
+        const [eventData, attendeesData, commentsData] = await Promise.all([
+          getEventRequest(eventId),
+          listAttendeesRequest(eventId, 1, ATTENDEES_PAGE_SIZE),
+          listCommentsRequest(eventId, 1, COMMENTS_PAGE_SIZE),
+        ]);
+        setEvent(eventData);
+        setAttendees(attendeesData.data);
+        setAttendeesPage(attendeesData.page);
+        setAttendeesTotalPages(attendeesData.totalPages);
+        setComments(commentsData.data);
+        setCommentsPage(commentsData.page);
+        setCommentsTotalPages(commentsData.totalPages);
       } catch (err) {
         if (err instanceof ApiError) setError(err.message);
         else setError('Failed to load event.');
@@ -99,13 +125,71 @@ export default function EventDetailsScreen() {
     return () => clearTimeout(timer);
   }, [eventId]);
 
+  const refreshEvent = useCallback(async () => {
+    const data = await getEventRequest(eventId);
+    setEvent(data);
+  }, [eventId]);
+
+  const refreshAttendees = useCallback(async () => {
+    const result = await listAttendeesRequest(eventId, 1, ATTENDEES_PAGE_SIZE);
+    setAttendees(result.data);
+    setAttendeesPage(result.page);
+    setAttendeesTotalPages(result.totalPages);
+  }, [eventId]);
+
+  const refreshComments = useCallback(async () => {
+    const result = await listCommentsRequest(eventId, 1, COMMENTS_PAGE_SIZE);
+    setComments(result.data);
+    setCommentsPage(result.page);
+    setCommentsTotalPages(result.totalPages);
+  }, [eventId]);
+
+  const loadMoreAttendees = async () => {
+    if (attendeesLoadingMore || attendeesPage >= attendeesTotalPages) return;
+    setAttendeesLoadingMore(true);
+    try {
+      const result = await listAttendeesRequest(
+        eventId,
+        attendeesPage + 1,
+        ATTENDEES_PAGE_SIZE
+      );
+      setAttendees((prev) => [...prev, ...result.data]);
+      setAttendeesPage(result.page);
+      setAttendeesTotalPages(result.totalPages);
+    } catch (err) {
+      if (err instanceof ApiError) setActionError(err.message);
+      else setActionError('Failed to load attendees.');
+    } finally {
+      setAttendeesLoadingMore(false);
+    }
+  };
+
+  const loadMoreComments = async () => {
+    if (commentsLoadingMore || commentsPage >= commentsTotalPages) return;
+    setCommentsLoadingMore(true);
+    try {
+      const result = await listCommentsRequest(
+        eventId,
+        commentsPage + 1,
+        COMMENTS_PAGE_SIZE
+      );
+      setComments((prev) => [...prev, ...result.data]);
+      setCommentsPage(result.page);
+      setCommentsTotalPages(result.totalPages);
+    } catch (err) {
+      if (err instanceof ApiError) setActionError(err.message);
+      else setActionError('Failed to load comments.');
+    } finally {
+      setCommentsLoadingMore(false);
+    }
+  };
+
   const runAction = async (fn: () => Promise<unknown>) => {
     setActionError(null);
     setActionLoading(true);
     try {
       await fn();
-      const fresh = await getEventRequest(eventId);
-      setEvent(fresh);
+      await Promise.all([refreshEvent(), refreshAttendees()]);
     } catch (err) {
       if (err instanceof ApiError) setActionError(err.message);
       else setActionError('Action failed. Please try again.');
@@ -131,9 +215,9 @@ export default function EventDetailsScreen() {
     setActionError(null);
     setPostingComment(true);
     try {
-      const created = await postCommentRequest(eventId, text);
-      setEvent({ ...event, comments: [...event.comments, created] });
+      await postCommentRequest(eventId, text);
       setNewComment('');
+      await Promise.all([refreshEvent(), refreshComments()]);
     } catch (err) {
       if (err instanceof ApiError) setActionError(err.message);
       else setActionError('Failed to post comment.');
@@ -161,6 +245,8 @@ export default function EventDetailsScreen() {
   const isActive = !event.canceled && (event.state === 'upcoming' || event.state === 'ongoing');
   const stateColor = STATE_COLOR[event.state] ?? STATE_COLOR.upcoming;
   const isFull = event.capacityState === 'full' || event.capacityState === 'over';
+  const hasMoreAttendees = attendeesPage < attendeesTotalPages;
+  const hasMoreComments = commentsPage < commentsTotalPages;
 
   return (
     <ScrollView
@@ -248,12 +334,28 @@ export default function EventDetailsScreen() {
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Attendees ({event.attendeesCount})</Text>
-        <AttendeeList attendees={event.attendees} />
+        <AttendeeList attendees={attendees} />
+        {hasMoreAttendees ? (
+          <Button
+            title="Load more attendees"
+            variant="secondary"
+            onPress={loadMoreAttendees}
+            loading={attendeesLoadingMore}
+          />
+        ) : null}
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Comments ({event.comments.length})</Text>
-        <CommentList comments={event.comments} />
+        <Text style={styles.sectionTitle}>Comments ({event.commentsCount})</Text>
+        <CommentList comments={comments} />
+        {hasMoreComments ? (
+          <Button
+            title="Load more comments"
+            variant="secondary"
+            onPress={loadMoreComments}
+            loading={commentsLoadingMore}
+          />
+        ) : null}
 
         <View style={styles.commentForm}>
           <TextInput

@@ -2,8 +2,7 @@ import { authenticateRequest } from "@/lib/apiAuth";
 import { badRequest, jsonOk, notFound, unauthorized } from "@/lib/apiResponse";
 import {
   EventError,
-  getEventAttendees,
-  getEventComments,
+  getEventCommentsCount,
   getEventDetails,
 } from "@/services/eventService";
 import { getCapacityState, getEventState } from "@/lib/eventState";
@@ -31,10 +30,7 @@ export async function GET(
     throw err;
   }
 
-  const [attendees, comments] = await Promise.all([
-    getEventAttendees(eventId),
-    getEventComments(eventId),
-  ]);
+  const commentsCount = await getEventCommentsCount(eventId);
 
   return jsonOk({
     id: event.id,
@@ -49,6 +45,7 @@ export async function GET(
     state: getEventState(event.date, event.time),
     capacityState: getCapacityState(event.attendees, event.capacity),
     attendeesCount: event.attendees,
+    commentsCount,
     groupId: event.groupId,
     groupTitle: event.groupTitle,
     createdBy: {
@@ -58,23 +55,5 @@ export async function GET(
     isRsvped: event.isRsvped,
     userExtraSlots: event.userExtraSlots,
     canManage: event.canManage,
-    attendees: attendees.map((a) => ({
-      userId: a.userId,
-      name: a.name,
-      photoUrl: a.photoUrl,
-      extraSlots: a.extraSlots,
-      rsvpAt: a.rsvpAt,
-    })),
-    comments: comments.map((c) => ({
-      id: c.id,
-      text: c.text,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
-      author: {
-        id: c.userId,
-        name: c.authorName,
-        photoUrl: c.authorPhotoUrl,
-      },
-    })),
   });
 }

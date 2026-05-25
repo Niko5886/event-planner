@@ -187,7 +187,7 @@ const HTML = `<!doctype html>
       <span class="path">/api/events</span>
       <span class="auth-tag">Bearer</span>
     </div>
-    <p class="desc">List active events (upcoming or ongoing, not canceled) across the user's groups.</p>
+    <p class="desc">List active events (upcoming or ongoing, not canceled).</p>
     <p class="params">Query: <code>page</code> (default 1), <code>limit</code> (default 20, max 100).</p>
     <details>
       <summary>Example</summary>
@@ -213,7 +213,7 @@ const HTML = `<!doctype html>
       <span class="path">/api/events/{id}</span>
       <span class="auth-tag">Bearer</span>
     </div>
-    <p class="desc">Event details with state, capacity, attendees list and comments.</p>
+    <p class="desc">Event details with state, capacity and counts. Use paged attendees/comments endpoints for lists.</p>
     <details>
       <summary>Example</summary>
 <pre>// 200 Response
@@ -225,16 +225,10 @@ const HTML = `<!doctype html>
   "capacity": 12, "canceled": false,
   "state": "upcoming", "capacityState": "under",
   "attendeesCount": 7,
+  "commentsCount": 2,
   "groupId": 1, "groupTitle": "City Explorers",
   "createdBy": { "id": 4, "name": "Alice" },
-  "isRsvped": true, "userExtraSlots": 1, "canManage": true,
-  "attendees": [
-    { "userId": 4, "name": "Alice", "photoUrl": null, "extraSlots": 1, "rsvpAt": "..." }
-  ],
-  "comments": [
-    { "id": 1, "text": "Can't wait!", "createdAt": "...", "updatedAt": "...",
-      "author": { "id": 4, "name": "Alice", "photoUrl": null } }
-  ]
+  "isRsvped": true, "userExtraSlots": 1, "canManage": true
 }</pre>
     </details>
   </div>
@@ -275,6 +269,28 @@ const HTML = `<!doctype html>
 
 // 200 Response
 { "ok": true, "extraSlots": 2 }</pre>
+    </details>
+  </div>
+
+  <h2>Attendees</h2>
+
+  <div class="endpoint">
+    <div class="row">
+      <span class="method GET">GET</span>
+      <span class="path">/api/events/{id}/attendees</span>
+      <span class="auth-tag">Bearer</span>
+    </div>
+    <p class="desc">List RSVPed attendees for an event, ordered by RSVP time. Supports paging.</p>
+    <p class="params">Query: <code>page</code> (default 1), <code>limit</code> (default 20, max 100).</p>
+    <details>
+      <summary>Example</summary>
+<pre>// 200 Response
+{
+  "data": [
+    { "userId": 4, "name": "Alice", "photoUrl": null, "extraSlots": 1, "rsvpAt": "..." }
+  ],
+  "page": 1, "limit": 20, "total": 1, "totalPages": 1
+}</pre>
     </details>
   </div>
 

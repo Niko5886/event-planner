@@ -189,14 +189,13 @@ export type EventDetails = {
   state: EventState;
   capacityState: 'under' | 'full' | 'over';
   attendeesCount: number;
+  commentsCount: number;
   groupId: number;
   groupTitle: string;
   createdBy: { id: number; name: string };
   isRsvped: boolean;
   userExtraSlots: number;
   canManage: boolean;
-  attendees: EventAttendee[];
-  comments: EventComment[];
 };
 
 export function getEventRequest(id: number) {
@@ -225,6 +224,12 @@ export function setExtraSlotsRequest(id: number, extraSlots: number) {
 export function listCommentsRequest(id: number, page = 1, limit = 20) {
   return apiRequest<PagedResponse<EventComment>>(
     `/events/${id}/comments?page=${page}&limit=${limit}`
+  );
+}
+
+export function listAttendeesRequest(id: number, page = 1, limit = 20) {
+  return apiRequest<PagedResponse<EventAttendee>>(
+    `/events/${id}/attendees?page=${page}&limit=${limit}`
   );
 }
 
