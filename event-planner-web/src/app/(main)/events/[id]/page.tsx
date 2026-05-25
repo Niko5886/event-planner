@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { EventActions } from "./EventActions";
+import { EventCommentForm } from "./EventCommentForm";
 import { getCurrentUser } from "@/lib/auth";
 import {
   EventError,
@@ -230,6 +231,8 @@ export default async function EventDetailPage({
             ))
           )}
         </div>
+
+        <EventCommentForm eventId={event.id} />
       </section>
     </div>
   );

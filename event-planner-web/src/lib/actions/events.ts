@@ -8,12 +8,18 @@ import {
   createEvent,
   deleteEvent,
   leaveEvent,
+  postEventComment,
   rsvpToEvent,
   updateRsvpSlots,
   updateEvent,
 } from "@/services/eventService";
 
 export type EventActionState = {
+  error: string | null;
+  success?: string | null;
+};
+
+export type CommentActionState = {
   error: string | null;
   success?: string | null;
 };
@@ -27,9 +33,21 @@ const EVENT_ERROR_MESSAGES: Record<string, string> = {
   invalid_input: "Invalid event data.",
 };
 
+const COMMENT_ERROR_MESSAGES: Record<string, string> = {
+  not_found: "Event not found.",
+  invalid_input: "Comment must be between 1 and 2000 characters.",
+};
+
 function mapEventError(err: unknown): string {
   if (err instanceof EventError) {
     return EVENT_ERROR_MESSAGES[err.code] ?? "Something went wrong.";
+  }
+  throw err;
+}
+
+function mapCommentError(err: unknown): string {
+  if (err instanceof EventError) {
+    return COMMENT_ERROR_MESSAGES[err.code] ?? "Something went wrong.";
   }
   throw err;
 }
@@ -258,4 +276,32 @@ export async function deleteEventAction(formData: FormData): Promise<void> {
     redirect(`/groups/${groupId}`);
   }
   redirect("/dashboard");
+}
+
+export async function postEventCommentAction(
+  _prev: CommentActionState,
+  formData: FormData
+): Promise<CommentActionState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  const eventId = Number(formData.get("eventId"));
+  const text = String(formData.get("text") ?? "").trim();
+  if (!Number.isInteger(eventId) || eventId <= 0) {
+    return { error: "Invalid event." };
+  }
+  if (!text) {
+    return { error: "Comment cannot be empty." };
+  }
+
+  try {
+    await postEventComment({ eventId, userId: user.userId, text });
+  } catch (err) {
+    return { error: mapCommentError(err) };
+  }
+
+  revalidatePath(`/events/${eventId}`);
+  return { error: null, success: "Comment posted." };
 }

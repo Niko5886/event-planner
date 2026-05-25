@@ -1,7 +1,10 @@
 import { cookies } from "next/headers";
 import { signToken, verifyToken, type JwtPayload } from "./jwt";
+import { AUTH_COOKIE_NAME } from "./authConstants";
+import { getUserById } from "@/services/userService";
 
-export const AUTH_COOKIE_NAME = "auth_token";
+export { AUTH_COOKIE_NAME };
+
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 export async function setAuthCookie(payload: JwtPayload): Promise<void> {
@@ -25,5 +28,18 @@ export async function getCurrentUser(): Promise<JwtPayload | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
   if (!token) return null;
-  return verifyToken(token);
+  const payload = verifyToken(token);
+  if (!payload) return null;
+
+  const dbUser = await getUserById(payload.userId);
+  if (!dbUser || dbUser.email !== payload.email) {
+    return null;
+  }
+
+  return {
+    userId: dbUser.id,
+    name: dbUser.name,
+    email: dbUser.email,
+    role: dbUser.role,
+  };
 }

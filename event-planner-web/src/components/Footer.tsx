@@ -13,7 +13,7 @@ export function Footer() {
             Plan events with your friends.
           </span>
         </div>
-        <span>© {year} Event Planner</span>
+        <span>© {year} Event Planner & Nikolay Stoyanov</span>
       </div>
     </footer>
   );
