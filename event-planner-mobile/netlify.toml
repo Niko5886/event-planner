@@ -1,0 +1,16 @@
+[build]
+  base    = "event-planner-mobile"
+  command = "npm install && npm run export:web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Required env var (set in Netlify dashboard before deploy):
+#   EXPO_PUBLIC_API_BASE_URL = https://<your-web-site>.netlify.app/api
+
+# SPA fallback so Expo Router's client-side routes resolve on refresh
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200

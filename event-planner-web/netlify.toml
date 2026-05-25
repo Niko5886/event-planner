@@ -1,0 +1,16 @@
+[build]
+  base    = "event-planner-web"
+  command = "npm install && npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NEXT_USE_NETLIFY_EDGE = "true"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Required env vars (configure in Netlify dashboard, NOT committed here):
+#   DATABASE_URL       — Neon production connection string with sslmode=require
+#   JWT_SECRET         — 32+ random chars (`openssl rand -hex 32`)
+#   NEXT_PUBLIC_APP_URL = https://<your-site>.netlify.app

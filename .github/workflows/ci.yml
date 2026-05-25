@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  web:
+    name: Web — lint & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: event-planner-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install (monorepo)
+        working-directory: .
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        env:
+          # Build does not connect to the DB, but next.config + drizzle.config
+          # import the env at module load. Provide a dummy value.
+          DATABASE_URL: "postgresql://user:pass@localhost:5432/db?sslmode=require"
+          JWT_SECRET: "ci-only-not-a-real-secret-just-for-build-step-validation"
+        run: npm run build
+
+  mobile:
+    name: Mobile — typecheck & web export
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: event-planner-mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install (monorepo)
+        working-directory: .
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Expo web export
+        env:
+          EXPO_PUBLIC_API_BASE_URL: https://example.com/api
+        run: npm run export:web

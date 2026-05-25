@@ -119,6 +119,9 @@ event planner/
 
 ## Database Schema (High Level)
 
+7 tables — full schema with columns, indexes and constraints is in
+[`docs/database-schema.md`](docs/database-schema.md).
+
 ```mermaid
 erDiagram
 	users ||--o{ groups : creates
@@ -178,8 +181,9 @@ npm run start -w event-planner-mobile
 ### Database Migrations and Seed
 
 ```
-npm run db:migrate -w event-planner-web
-npm run db:seed -w event-planner-web
+npm run db:migrate     -w event-planner-web
+npm run db:seed        -w event-planner-web   # small curated demo (18 users, 4 groups, 10 events)
+npm run db:seed:large  -w event-planner-web   # ~30k records for scalability validation
 ```
 
 ### Expo Web Export
@@ -210,3 +214,19 @@ npm run export:web -w event-planner-mobile
 | Admin | admin@demo.com | demo123 |
 | Group Manager | manager@demo.com | demo123 |
 | Group Member | member@demo.com | demo123 |
+
+---
+
+## Deployment
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the full Netlify + Neon deployment guide,
+including environment variables, the Expo Web export site, and (optional) the
+Android APK build via Expo EAS.
+
+## Further Reading
+
+- [`AGENTS.md`](AGENTS.md) — AI agent rules and architecture invariants
+- [`docs/database-schema.md`](docs/database-schema.md) — full DB schema
+- [`DEPLOYMENT.md`](DEPLOYMENT.md) — production deployment
+- [`event-planner-web/README.md`](event-planner-web/README.md) — Web app dev
+- [`event-planner-mobile/README.md`](event-planner-mobile/README.md) — Mobile app dev
