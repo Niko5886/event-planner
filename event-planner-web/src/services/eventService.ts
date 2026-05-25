@@ -148,6 +148,32 @@ export async function getPastAndCanceledEvents(): Promise<EventCardData[]> {
     .orderBy(desc(events.date), desc(events.time));
 }
 
+export async function getPastAndCanceledEventsPaged(input: {
+  limit: number;
+  offset: number;
+}): Promise<{ items: EventCardData[]; total: number }> {
+  const whereClause = or(
+    eq(events.canceled, true),
+    sql`${eventEndUtcExpr} <= ${nowUtcExpr}`
+  );
+
+  const items = await db
+    .select(baseSelect)
+    .from(events)
+    .innerJoin(groups, eq(groups.id, events.groupId))
+    .where(whereClause)
+    .orderBy(desc(events.date), desc(events.time))
+    .limit(input.limit)
+    .offset(input.offset);
+
+  const [countRow] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(events)
+    .where(whereClause);
+
+  return { items, total: Number(countRow?.total ?? 0) };
+}
+
 export async function getEventDetails(
   eventId: number,
   viewerId: number,

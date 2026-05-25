@@ -88,6 +88,52 @@ export async function listUserGroups(
   return rows;
 }
 
+export async function listUserGroupsPaged(input: {
+  userId: number;
+  limit: number;
+  offset: number;
+}): Promise<{ items: GroupListItem[]; total: number }> {
+  const rows = await db
+    .select({
+      id: groups.id,
+      title: groups.title,
+      description: groups.description,
+      isManager: groupMembers.isManager,
+      memberCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${groupMembers}
+        WHERE ${groupMembers.groupId} = ${groups.id}
+      )`,
+      eventCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${events}
+        WHERE ${events.groupId} = ${groups.id}
+      )`,
+    })
+    .from(groups)
+    .innerJoin(
+      groupMembers,
+      and(
+        eq(groupMembers.groupId, groups.id),
+        eq(groupMembers.userId, input.userId)
+      )
+    )
+    .orderBy(asc(groups.title))
+    .limit(input.limit)
+    .offset(input.offset);
+
+  const [countRow] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(groups)
+    .innerJoin(
+      groupMembers,
+      and(
+        eq(groupMembers.groupId, groups.id),
+        eq(groupMembers.userId, input.userId)
+      )
+    );
+
+  return { items: rows, total: Number(countRow?.total ?? 0) };
+}
+
 export async function createGroup(input: {
   title: string;
   description: string | null;
