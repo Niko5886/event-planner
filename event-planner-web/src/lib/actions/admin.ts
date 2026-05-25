@@ -19,15 +19,19 @@ export async function adminDeleteGroupAction(formData: FormData): Promise<void> 
   const groupId = Number(formData.get("groupId"));
   if (!Number.isInteger(groupId) || groupId <= 0) return;
   await deleteGroup({ groupId, userId: user.userId, role: user.role });
-  revalidatePath("/admin");
-  revalidatePath("/groups");
+  revalidatePath("/", "layout");
 }
 
 export async function adminDeleteEventAction(formData: FormData): Promise<void> {
   const user = await ensureAdmin();
   const eventId = Number(formData.get("eventId"));
   if (!Number.isInteger(eventId) || eventId <= 0) return;
-  await deleteEvent({ eventId, userId: user.userId, role: user.role });
-  revalidatePath("/admin");
-  revalidatePath("/dashboard");
+  const { groupId } = await deleteEvent({
+    eventId,
+    userId: user.userId,
+    role: user.role,
+  });
+  revalidatePath(`/events/${eventId}`);
+  revalidatePath(`/groups/${groupId}`);
+  revalidatePath("/", "layout");
 }

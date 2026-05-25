@@ -1,4 +1,4 @@
-import { desc, sql } from "drizzle-orm";
+import { asc, desc, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   eventComments,
@@ -8,6 +8,21 @@ import {
   groups,
   users,
 } from "@/db/schema";
+import type { EventSort } from "./eventService";
+import type { GroupSort } from "./groupService";
+
+const adminEventCityExpr = sql<string>`LOWER(TRIM(REGEXP_REPLACE(COALESCE(${events.location}, ''), '^.*,', '')))`;
+
+function adminEventOrderBy(sort: EventSort) {
+  const dateOrder = [desc(events.date), desc(events.time)];
+  if (sort === "city") return [sql`${adminEventCityExpr} ASC`, ...dateOrder];
+  if (sort === "title") return [asc(events.title), ...dateOrder];
+  return dateOrder;
+}
+
+function adminGroupOrderBy(_sort: GroupSort) {
+  return [asc(groups.title)];
+}
 
 export type AdminOverview = {
   users: number;
@@ -83,6 +98,30 @@ export async function listAdminUsers(limit = 20): Promise<AdminUserItem[]> {
     .limit(limit);
 }
 
+export async function listAdminUsersPaged(input: {
+  limit: number;
+  offset: number;
+}): Promise<{ items: AdminUserItem[]; total: number }> {
+  const items = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .orderBy(desc(users.createdAt))
+    .limit(input.limit)
+    .offset(input.offset);
+
+  const [countRow] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(users);
+
+  return { items, total: Number(countRow?.total ?? 0) };
+}
+
 export async function listAdminGroups(limit = 20): Promise<AdminGroupItem[]> {
   return db
     .select({
@@ -106,6 +145,40 @@ export async function listAdminGroups(limit = 20): Promise<AdminGroupItem[]> {
     .limit(limit);
 }
 
+export async function listAdminGroupsPaged(input: {
+  limit: number;
+  offset: number;
+  sort?: GroupSort;
+}): Promise<{ items: AdminGroupItem[]; total: number }> {
+  const items = await db
+    .select({
+      id: groups.id,
+      title: groups.title,
+      description: groups.description,
+      createdAt: groups.createdAt,
+      createdByName: users.name,
+      memberCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${groupMembers}
+        WHERE ${groupMembers.groupId} = ${groups.id}
+      )`,
+      eventCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${events}
+        WHERE ${events.groupId} = ${groups.id}
+      )`,
+    })
+    .from(groups)
+    .innerJoin(users, sql`${users.id} = ${groups.createdBy}`)
+    .orderBy(...adminGroupOrderBy(input.sort ?? "title"))
+    .limit(input.limit)
+    .offset(input.offset);
+
+  const [countRow] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(groups);
+
+  return { items, total: Number(countRow?.total ?? 0) };
+}
+
 export async function listAdminEvents(limit = 20): Promise<AdminEventItem[]> {
   return db
     .select({
@@ -124,4 +197,35 @@ export async function listAdminEvents(limit = 20): Promise<AdminEventItem[]> {
     .innerJoin(users, sql`${users.id} = ${events.createdBy}`)
     .orderBy(desc(events.date), desc(events.time))
     .limit(limit);
+}
+
+export async function listAdminEventsPaged(input: {
+  limit: number;
+  offset: number;
+  sort?: EventSort;
+}): Promise<{ items: AdminEventItem[]; total: number }> {
+  const items = await db
+    .select({
+      id: events.id,
+      title: events.title,
+      date: events.date,
+      time: events.time,
+      canceled: events.canceled,
+      capacity: events.capacity,
+      attendees: attendeesExpr,
+      groupTitle: groups.title,
+      createdByName: users.name,
+    })
+    .from(events)
+    .innerJoin(groups, sql`${groups.id} = ${events.groupId}`)
+    .innerJoin(users, sql`${users.id} = ${events.createdBy}`)
+    .orderBy(...adminEventOrderBy(input.sort ?? "date"))
+    .limit(input.limit)
+    .offset(input.offset);
+
+  const [countRow] = await db
+    .select({ total: sql<number>`COUNT(*)::int` })
+    .from(events);
+
+  return { items, total: Number(countRow?.total ?? 0) };
 }

@@ -37,6 +37,18 @@ export type GroupListItem = {
   isManager: boolean;
 };
 
+export type GroupSort = "title" | "city";
+
+export function parseGroupSort(value: unknown): GroupSort {
+  return value === "city" ? "city" : "title";
+}
+
+// In seed-large.ts group titles start with the city ("Sofia Runners #1").
+// Sorting by title approximates sorting by city for seeded data.
+function groupOrderBy(sort: GroupSort) {
+  return [asc(groups.title)];
+}
+
 export type GroupDetails = {
   id: number;
   title: string;
@@ -92,6 +104,7 @@ export async function listUserGroupsPaged(input: {
   userId: number;
   limit: number;
   offset: number;
+  sort?: GroupSort;
 }): Promise<{ items: GroupListItem[]; total: number }> {
   const rows = await db
     .select({
@@ -116,7 +129,7 @@ export async function listUserGroupsPaged(input: {
         eq(groupMembers.userId, input.userId)
       )
     )
-    .orderBy(asc(groups.title))
+    .orderBy(...groupOrderBy(input.sort ?? "title"))
     .limit(input.limit)
     .offset(input.offset);
 

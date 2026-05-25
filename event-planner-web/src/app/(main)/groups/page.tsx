@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { Plus, Users } from "lucide-react";
 import { GroupCard } from "@/components/GroupCard";
+import { SortLinks } from "@/components/SortLinks";
 import { getCurrentUser } from "@/lib/auth";
-import { listUserGroupsPaged } from "@/services/groupService";
+import { listUserGroupsPaged, parseGroupSort } from "@/services/groupService";
 
 export const metadata = {
   title: "My Groups · Event Planner",
 };
 
 const GROUPS_PAGE_SIZE = 9;
+
+const GROUP_SORT_OPTIONS = [
+  { value: "title", label: "Title" },
+  { value: "city", label: "City" },
+];
 
 function parsePageParam(value: string | string[] | undefined): number {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -19,16 +25,19 @@ function parsePageParam(value: string | string[] | undefined): number {
 export default async function GroupsPage({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = (await getCurrentUser())!;
-  const page = parsePageParam(searchParams?.page);
+  const params = (await searchParams) ?? {};
+  const page = parsePageParam(params.page);
+  const sort = parseGroupSort(params.sort);
   const limit = page * GROUPS_PAGE_SIZE;
 
   const { items: groups, total } = await listUserGroupsPaged({
     userId: user.userId,
     limit,
     offset: 0,
+    sort,
   });
 
   const hasMore = groups.length < total;
@@ -52,6 +61,18 @@ export default async function GroupsPage({
           New Group
         </Link>
       </header>
+
+      {total > 0 && (
+        <div className="mb-4">
+          <SortLinks
+            param="sort"
+            current={sort}
+            options={GROUP_SORT_OPTIONS}
+            basePath="/groups"
+            extraParams={{ page: String(page) }}
+          />
+        </div>
+      )}
 
       {total === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 bg-white p-12 text-center">
@@ -80,7 +101,7 @@ export default async function GroupsPage({
               <Link
                 href={{
                   pathname: "/groups",
-                  query: { page: String(page + 1) },
+                  query: { page: String(page + 1), sort },
                 }}
                 className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
               >

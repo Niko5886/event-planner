@@ -1,11 +1,19 @@
 import Link from "next/link";
 import { CalendarCheck, CalendarX } from "lucide-react";
 import { EventCard } from "@/components/EventCard";
+import { SortLinks } from "@/components/SortLinks";
 import { getCurrentUser } from "@/lib/auth";
 import {
   getActiveEventsPaged,
   getPastAndCanceledEventsPaged,
+  parseEventSort,
 } from "@/services/eventService";
+
+const EVENT_SORT_OPTIONS = [
+  { value: "date", label: "Date" },
+  { value: "city", label: "City" },
+  { value: "title", label: "Title" },
+];
 
 export const metadata = {
   title: "Dashboard · Event Planner",
@@ -23,19 +31,21 @@ function parsePageParam(value: string | string[] | undefined): number {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const user = (await getCurrentUser())!;
 
-  const activePage = parsePageParam(searchParams?.activePage);
-  const pastPage = parsePageParam(searchParams?.pastPage);
+  const params = (await searchParams) ?? {};
+  const activePage = parsePageParam(params.activePage);
+  const pastPage = parsePageParam(params.pastPage);
+  const sort = parseEventSort(params.sort);
 
   const activeLimit = activePage * ACTIVE_PAGE_SIZE;
   const pastLimit = pastPage * PAST_PAGE_SIZE;
 
   const [activeResult, pastResult] = await Promise.all([
-    getActiveEventsPaged({ limit: activeLimit, offset: 0 }),
-    getPastAndCanceledEventsPaged({ limit: pastLimit, offset: 0 }),
+    getActiveEventsPaged({ limit: activeLimit, offset: 0, sort }),
+    getPastAndCanceledEventsPaged({ limit: pastLimit, offset: 0, sort }),
   ]);
 
   const activeEvents = activeResult.items;
@@ -57,14 +67,26 @@ export default async function DashboardPage({
       </header>
 
       <section>
-        <div className="mb-4 flex items-center gap-2">
-          <CalendarCheck className="h-5 w-5 text-indigo-600" />
-          <h2 className="text-xl font-semibold text-slate-900">
-            Upcoming Events
-          </h2>
-          <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
-            {activeTotal}
-          </span>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CalendarCheck className="h-5 w-5 text-indigo-600" />
+            <h2 className="text-xl font-semibold text-slate-900">
+              Upcoming Events
+            </h2>
+            <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+              {activeTotal}
+            </span>
+          </div>
+          <SortLinks
+            param="sort"
+            current={sort}
+            options={EVENT_SORT_OPTIONS}
+            basePath="/dashboard"
+            extraParams={{
+              activePage: String(activePage),
+              pastPage: String(pastPage),
+            }}
+          />
         </div>
 
         {activeTotal === 0 ? (
@@ -87,6 +109,7 @@ export default async function DashboardPage({
                     query: {
                       activePage: String(activePage + 1),
                       pastPage: String(pastPage),
+                      sort,
                     },
                   }}
                   className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
@@ -131,6 +154,7 @@ export default async function DashboardPage({
                     query: {
                       activePage: String(activePage),
                       pastPage: String(pastPage + 1),
+                      sort,
                     },
                   }}
                   className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"

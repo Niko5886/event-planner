@@ -55,6 +55,12 @@ export type EventAttendee = {
 export const MAX_COMMENT_LENGTH = 2000;
 export const MIN_COMMENT_LENGTH = 1;
 
+export type EventSort = "date" | "city" | "title";
+
+export function parseEventSort(value: unknown): EventSort {
+  return value === "city" || value === "title" ? value : "date";
+}
+
 export type EventErrorCode =
   | "not_found"
   | "forbidden"
@@ -85,6 +91,23 @@ const attendeesExpr = sql<number>`COALESCE((
 const eventEndUtcExpr = sql`((${events.date}::timestamp + ${events.time}) + interval '1 hour')`;
 const nowUtcExpr = sql`(now() at time zone 'utc')::timestamp`;
 
+// Extracts city from a location like "Cafe Central, Sofia" -> "Sofia".
+// Falls back to empty string when location is null or has no comma.
+const eventCityExpr = sql<string>`LOWER(TRIM(REGEXP_REPLACE(COALESCE(${events.location}, ''), '^.*,', '')))`;
+
+function eventOrderBy(sort: EventSort, dateDir: "asc" | "desc") {
+  const dateOrder = dateDir === "asc"
+    ? [asc(events.date), asc(events.time)]
+    : [desc(events.date), desc(events.time)];
+  if (sort === "city") {
+    return [sql`${eventCityExpr} ASC`, ...dateOrder];
+  }
+  if (sort === "title") {
+    return [asc(events.title), ...dateOrder];
+  }
+  return dateOrder;
+}
+
 const baseSelect = {
   id: events.id,
   title: events.title,
@@ -114,6 +137,7 @@ export async function getActiveEvents(): Promise<EventCardData[]> {
 export async function getActiveEventsPaged(input: {
   limit: number;
   offset: number;
+  sort?: EventSort;
 }): Promise<{ items: EventCardData[]; total: number }> {
   const whereClause = and(
     eq(events.canceled, false),
@@ -125,7 +149,7 @@ export async function getActiveEventsPaged(input: {
     .from(events)
     .innerJoin(groups, eq(groups.id, events.groupId))
     .where(whereClause)
-    .orderBy(asc(events.date), asc(events.time))
+    .orderBy(...eventOrderBy(input.sort ?? "date", "asc"))
     .limit(input.limit)
     .offset(input.offset);
 
@@ -151,6 +175,7 @@ export async function getPastAndCanceledEvents(): Promise<EventCardData[]> {
 export async function getPastAndCanceledEventsPaged(input: {
   limit: number;
   offset: number;
+  sort?: EventSort;
 }): Promise<{ items: EventCardData[]; total: number }> {
   const whereClause = or(
     eq(events.canceled, true),
@@ -162,7 +187,7 @@ export async function getPastAndCanceledEventsPaged(input: {
     .from(events)
     .innerJoin(groups, eq(groups.id, events.groupId))
     .where(whereClause)
-    .orderBy(desc(events.date), desc(events.time))
+    .orderBy(...eventOrderBy(input.sort ?? "date", "desc"))
     .limit(input.limit)
     .offset(input.offset);
 
