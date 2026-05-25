@@ -54,6 +54,8 @@ export default function EventDetailsScreen() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [joinEnabled, setJoinEnabled] = useState(false);
+
   const [newComment, setNewComment] = useState('');
   const [postingComment, setPostingComment] = useState(false);
 
@@ -90,6 +92,12 @@ export default function EventDetailsScreen() {
   useEffect(() => {
     load('initial');
   }, [load]);
+
+  useEffect(() => {
+    setJoinEnabled(false);
+    const timer = setTimeout(() => setJoinEnabled(true), 350);
+    return () => clearTimeout(timer);
+  }, [eventId]);
 
   const runAction = async (fn: () => Promise<unknown>) => {
     setActionError(null);
@@ -228,7 +236,12 @@ export default function EventDetailsScreen() {
               />
             </View>
           ) : (
-            <Button title="Join" onPress={onRsvp} loading={actionLoading} />
+            <Button
+              title="Join"
+              onPress={onRsvp}
+              loading={actionLoading}
+              disabled={!joinEnabled || actionLoading}
+            />
           )}
         </View>
       ) : null}
