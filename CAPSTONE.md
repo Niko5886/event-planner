@@ -13,9 +13,9 @@ development.
 | **Author** | Nikolay Stoyanov |
 | **Email** | lobido1988@gmail.com |
 | **GitHub Repo** | https://github.com/Niko5886/event-planner |
-| **Web Project Live URL** | _(set after Netlify deploy — see [`DEPLOYMENT.md`](DEPLOYMENT.md))_ |
-| **Expo Project Live URL** | _(set after Netlify deploy — see [`DEPLOYMENT.md`](DEPLOYMENT.md))_ |
-| **Sample credentials** | `admin@demo.com / demo123` &nbsp;·&nbsp; `manager@demo.com / demo123` &nbsp;·&nbsp; `member@demo.com / demo123` |
+| **Web Project Live URL** | https://eventplannerns.netlify.app/ 
+| **Expo Project Live URL** | https://eventplannermobile.netlify.app/   
+| **Sample credentials** | `admin@demo.com / demo123` &nbsp;·&nbsp; `manager@demo.com / demo123` &nbsp;·&nbsp; `member@demo.com / demo123` | hristo.yordanov40@example.com / demo123 , ivan.marinov39@example.com / demo123 .
 
 ---
 
