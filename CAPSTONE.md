@@ -23,7 +23,7 @@ development.
 
 | # | Criterion | Max | My Score | Evidence |
 |---|-----------|----:|---------:|----------|
-| 1 | GitHub Commits (≥15) | 15 | **15** | 33 commits in `main` history |
+| 1 | GitHub Commits (≥15) | 15 | **15** | 41 commits in `main` history |
 | 2 | GitHub Commit Days (≥3) | 15 | **15** | 5 distinct days (May 20–24, 2026) |
 | 3 | Architecture | 5 | **5** | npm monorepo: `event-planner-web` (Next.js back-end + Web) + `event-planner-mobile` (Expo) + `event-planner-shared`. REST API + Server Actions. |
 | 4 | Backend | 5 | **5** | Service layer in `src/services/`, REST endpoints in `src/app/api/`, JWT + bcrypt auth |
