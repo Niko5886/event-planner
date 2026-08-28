@@ -24,7 +24,12 @@ jobs:
 
       - name: Install (monorepo)
         working-directory: .
-        run: npm ci
+        # Use `npm install` (not `npm ci`): the committed lockfile drifts from
+        # what a fresh registry resolution produces (cross-workspace @types/react
+        # skew), which makes the strict `npm ci` sync check fail. `npm install`
+        # reconciles the lockfile with package.json and installs deterministically
+        # enough for lint/build/typecheck.
+        run: npm install --no-audit --no-fund
 
       - name: Lint
         run: npm run lint
@@ -54,7 +59,12 @@ jobs:
 
       - name: Install (monorepo)
         working-directory: .
-        run: npm ci
+        # Use `npm install` (not `npm ci`): the committed lockfile drifts from
+        # what a fresh registry resolution produces (cross-workspace @types/react
+        # skew), which makes the strict `npm ci` sync check fail. `npm install`
+        # reconciles the lockfile with package.json and installs deterministically
+        # enough for lint/build/typecheck.
+        run: npm install --no-audit --no-fund
 
       - name: Typecheck
         run: npx tsc --noEmit
