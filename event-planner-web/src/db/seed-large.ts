@@ -183,7 +183,6 @@ async function seedLarge() {
     ret.forEach((r) => insertedUserIds.push(r.id));
   });
 
-  const adminId = insertedUserIds[0];
   const managerId = insertedUserIds[1];
   const memberId = insertedUserIds[2];
   const allUserIds = insertedUserIds;

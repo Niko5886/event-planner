@@ -571,8 +571,8 @@ export async function updateRsvpSlots(input: {
           eq(eventRsvps.userId, input.userId)
         )
       );
-  } catch (err: any) {
-    const msg = String(err?.message ?? err);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
     // Postgres CHECK constraint name for extra_slots usually contains
     // 'event_rsvps_extra_slots_check' — treat that as invalid input.
     if (msg.includes("event_rsvps_extra_slots_check") || msg.includes("check constraint")) {

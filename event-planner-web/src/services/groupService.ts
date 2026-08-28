@@ -45,7 +45,7 @@ export function parseGroupSort(value: unknown): GroupSort {
 
 // In seed-large.ts group titles start with the city ("Sofia Runners #1").
 // Sorting by title approximates sorting by city for seeded data.
-function groupOrderBy(sort: GroupSort) {
+function groupOrderBy(_sort: GroupSort) {
   return [asc(groups.title)];
 }
 

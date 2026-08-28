@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { postEventCommentAction, type CommentActionState } from "@/lib/actions/events";
 
 const initialState: CommentActionState = { error: null, success: null };
@@ -12,12 +12,16 @@ export function EventCommentForm({ eventId }: { eventId: number }) {
     initialState
   );
   const [text, setText] = useState("");
+  const [handledSuccess, setHandledSuccess] = useState(state.success);
 
-  useEffect(() => {
+  // Clear the textarea when a new successful post is registered. Adjusting
+  // state during render (React-recommended) instead of syncing via useEffect.
+  if (state.success !== handledSuccess) {
+    setHandledSuccess(state.success);
     if (state.success) {
       setText("");
     }
-  }, [state.success]);
+  }
 
   return (
     <form action={action} className="mt-5 space-y-3">
