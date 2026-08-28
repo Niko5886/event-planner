@@ -3,17 +3,19 @@ import { CalendarDays } from "lucide-react";
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm text-slate-600 sm:flex-row">
+    <footer className="border-t border-line bg-surface">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm text-ink-muted sm:flex-row sm:px-6">
         <div className="flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-indigo-600" />
-          <span className="font-semibold text-slate-900">Event Planner</span>
-          <span className="hidden text-slate-400 sm:inline">·</span>
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-600 text-white">
+            <CalendarDays className="h-3.5 w-3.5" />
+          </span>
+          <span className="font-semibold text-ink">Event Planner</span>
+          <span className="hidden text-line-strong sm:inline">·</span>
           <span className="hidden sm:inline">
             Plan events with your friends.
           </span>
         </div>
-        <span>© {year} Event Planner & Nikolay Stoyanov</span>
+        <span>© {year} Event Planner &amp; Nikolay Stoyanov</span>
       </div>
     </footer>
   );
