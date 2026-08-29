@@ -10,6 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
+import { Card, CardContent, buttonVariants } from "@/components/ui";
 
 const FEATURES = [
   {
@@ -40,19 +41,26 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <section className="flex flex-1 items-center justify-center bg-gradient-to-b from-indigo-50 via-white to-white px-4 py-20">
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-sm font-medium text-indigo-700 shadow-sm">
+      <section className="relative flex flex-1 items-center justify-center overflow-hidden bg-gradient-to-b from-brand-50 via-app to-app px-4 py-24">
+        {/* soft radial glow behind the hero */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-40 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl"
+        />
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-surface px-4 py-1.5 text-sm font-medium text-brand-700 shadow-xs">
             <Sparkles className="h-4 w-4" />
             Plan together. Show up together.
           </div>
 
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-ink sm:text-5xl md:text-6xl">
             Events with friends,{" "}
-            <span className="text-indigo-600">made simple.</span>
+            <span className="bg-gradient-to-r from-accent-from to-accent-to bg-clip-text text-transparent">
+              made simple.
+            </span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-slate-600">
+          <p className="mt-6 max-w-xl text-lg text-ink-muted">
             Event Planner helps you organize gatherings — from rooftop dinners
             to mountain hikes. Create a group, send invites, RSVP, and keep the
             chat in one place.
@@ -61,7 +69,7 @@ export default async function HomePage() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/register"
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+              className={buttonVariants({ variant: "primary", size: "lg" })}
             >
               <UserPlus className="h-5 w-5" />
               Get Started
@@ -69,7 +77,7 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className={buttonVariants({ variant: "secondary", size: "lg" })}
             >
               <LogIn className="h-5 w-5" />
               Sign In
@@ -78,38 +86,40 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-20">
+      <section className="border-t border-line bg-surface px-4 py-20">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-3xl font-bold text-slate-900">
+          <h2 className="text-center text-3xl font-bold text-ink">
             Everything you need to organize
           </h2>
-          <p className="mx-auto mt-2 max-w-xl text-center text-slate-600">
+          <p className="mx-auto mt-2 max-w-xl text-center text-ink-muted">
             Stop juggling group chats and shared docs. Event Planner brings
             invitations, RSVPs and comments into one calm space.
           </p>
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {FEATURES.map(({ title, description, icon: Icon }) => (
-              <div
+              <Card
                 key={title}
-                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
+                className="transition-shadow hover:shadow-md"
               >
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900">
-                  {title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {description}
-                </p>
-              </div>
+                <CardContent className="p-6 pt-6">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-semibold text-ink">
+                    {title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-muted">
+                    {description}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
+      <footer className="border-t border-line bg-surface px-4 py-6 text-center text-sm text-ink-subtle">
         © {new Date().getFullYear()} Event Planner · Plan events with your friends.
       </footer>
     </div>
