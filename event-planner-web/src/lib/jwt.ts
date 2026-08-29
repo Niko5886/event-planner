@@ -1,10 +1,19 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "7d";
 
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is not set");
+/**
+ * Read the JWT secret at call time (not at module load) so that importing this
+ * module during `next build` — when JWT_SECRET may be absent — does not throw
+ * and crash the build. The secret is only required when actually signing or
+ * verifying a token at request time.
+ */
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET is not set");
+  }
+  return secret;
 }
 
 export type JwtPayload = {
@@ -15,12 +24,12 @@ export type JwtPayload = {
 };
 
 export function signToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET!, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: JWT_EXPIRES_IN });
 }
 
 export function verifyToken(token: string): JwtPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET!) as JwtPayload;
+    const decoded = jwt.verify(token, getJwtSecret()) as JwtPayload;
     return {
       userId: decoded.userId,
       name: decoded.name ?? decoded.email,
