@@ -48,25 +48,34 @@ export default async function HomePage() {
           className="pointer-events-none absolute -top-40 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl"
         />
         <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-surface px-4 py-1.5 text-sm font-medium text-brand-700 shadow-xs">
+          <div className="inline-flex animate-fade-in-up items-center gap-2 rounded-full border border-brand-200 bg-surface px-4 py-1.5 text-sm font-medium text-brand-700 shadow-xs">
             <Sparkles className="h-4 w-4" />
             Plan together. Show up together.
           </div>
 
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-ink sm:text-5xl md:text-6xl">
+          <h1
+            className="mt-6 animate-fade-in-up text-4xl font-bold tracking-tight text-ink sm:text-5xl md:text-6xl"
+            style={{ animationDelay: "80ms" }}
+          >
             Events with friends,{" "}
             <span className="bg-gradient-to-r from-accent-from to-accent-to bg-clip-text text-transparent">
               made simple.
             </span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-ink-muted">
+          <p
+            className="mt-6 max-w-xl animate-fade-in-up text-lg text-ink-muted"
+            style={{ animationDelay: "160ms" }}
+          >
             Event Planner helps you organize gatherings — from rooftop dinners
             to mountain hikes. Create a group, send invites, RSVP, and keep the
             chat in one place.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div
+            className="mt-8 flex animate-fade-in-up flex-col gap-3 sm:flex-row"
+            style={{ animationDelay: "240ms" }}
+          >
             <Link
               href="/register"
               className={buttonVariants({ variant: "primary", size: "lg" })}

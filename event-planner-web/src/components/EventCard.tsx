@@ -74,7 +74,7 @@ export function EventCard({
   return (
     <Link
       href={`/events/${event.id}`}
-      className="group flex flex-col rounded-xl border border-line bg-surface p-5 shadow-sm transition hover:border-brand-300 hover:shadow-md"
+      className="group flex flex-col rounded-xl border border-line bg-surface p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-3">
         <span className="text-xs font-medium uppercase tracking-wide text-brand-600">

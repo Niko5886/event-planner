@@ -69,12 +69,37 @@
   --shadow-lg: 0 12px 28px -8px rgb(24 24 27 / 0.12),
     0 4px 10px -4px rgb(24 24 27 / 0.06);
   --shadow-xl: 0 24px 48px -12px rgb(24 24 27 / 0.18);
+
+  /* --- Motion: subtle, tasteful entrances --- */
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-fade-in-up: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -134,5 +159,21 @@
   ::selection {
     background-color: var(--color-brand-200);
     color: var(--color-brand-900);
+  }
+
+  /* Respect users who prefer reduced motion: no entrances, no smooth
+     scroll, near-instant transitions. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

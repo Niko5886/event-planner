@@ -62,7 +62,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string | null }) {
   const [password, setPassword] = useState("");
 
   return (
-    <Card className="w-full max-w-md p-8 shadow-lg">
+    <Card className="w-full max-w-md animate-fade-in p-8 shadow-lg">
       <h1 className="text-2xl font-bold tracking-tight text-ink">Sign In</h1>
       <p className="mt-1 text-sm text-ink-muted">
         Welcome back — let&apos;s plan something fun.

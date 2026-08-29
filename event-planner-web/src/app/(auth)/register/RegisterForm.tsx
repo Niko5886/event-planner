@@ -26,7 +26,7 @@ export function RegisterForm() {
   const mismatch = confirmPassword.length > 0 && password !== confirmPassword;
 
   return (
-    <Card className="w-full max-w-sm p-8 shadow-lg">
+    <Card className="w-full max-w-sm animate-fade-in p-8 shadow-lg">
       <h1 className="text-2xl font-bold tracking-tight text-ink">
         Create account
       </h1>
