@@ -14,6 +14,7 @@ import {
   adminDeleteEventAction,
   adminDeleteGroupAction,
 } from "@/lib/actions/admin";
+import { Badge, Card, buttonVariants } from "@/components/ui";
 
 const USERS_PAGE_SIZE = 10;
 const GROUPS_PAGE_SIZE = 10;
@@ -29,6 +30,9 @@ const ADMIN_EVENT_SORT_OPTIONS = [
   { value: "city", label: "City" },
   { value: "title", label: "Title" },
 ];
+
+const deleteButtonClass =
+  "inline-flex items-center rounded-md border border-danger/30 bg-danger-soft px-3 py-1.5 text-xs font-semibold text-danger-ink transition-colors hover:bg-danger/10";
 
 function formatDate(value: string | Date) {
   const d = typeof value === "string" ? new Date(`${value}T00:00:00`) : value;
@@ -84,10 +88,10 @@ export default async function AdminPage({
   const hasMoreEvents = events.length < eventsResult.total;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
+    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900">Admin Panel</h1>
-        <p className="text-sm text-slate-600">
+        <h1 className="text-3xl font-bold tracking-tight text-ink">Admin Panel</h1>
+        <p className="text-sm text-ink-muted">
           Lightweight overview of users, groups, and events.
         </p>
       </header>
@@ -100,32 +104,27 @@ export default async function AdminPage({
           { label: "RSVPs", value: overview.rsvps },
           { label: "Comments", value: overview.comments },
         ].map((item) => (
-          <div
-            key={item.label}
-            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-          >
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <Card key={item.label} className="p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
               {item.label}
             </p>
-            <p className="mt-2 text-2xl font-semibold text-slate-900">
-              {item.value}
-            </p>
-          </div>
+            <p className="mt-2 text-2xl font-semibold text-ink">{item.value}</p>
+          </Card>
         ))}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <Card className="p-5">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
             Users
           </h2>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink-muted">
             Showing {users.length} of {usersResult.total}
           </span>
         </div>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-400">
+            <thead className="text-xs uppercase text-ink-subtle">
               <tr>
                 <th className="py-2">Name</th>
                 <th className="py-2">Email</th>
@@ -135,13 +134,11 @@ export default async function AdminPage({
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-t border-slate-100">
-                  <td className="py-2 font-medium text-slate-900">{u.name}</td>
-                  <td className="py-2 text-slate-600">{u.email}</td>
-                  <td className="py-2 text-slate-600">{u.role}</td>
-                  <td className="py-2 text-slate-600">
-                    {formatDate(u.createdAt)}
-                  </td>
+                <tr key={u.id} className="border-t border-line">
+                  <td className="py-2 font-medium text-ink">{u.name}</td>
+                  <td className="py-2 text-ink-muted">{u.email}</td>
+                  <td className="py-2 text-ink-muted">{u.role}</td>
+                  <td className="py-2 text-ink-muted">{formatDate(u.createdAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -158,20 +155,20 @@ export default async function AdminPage({
                   eventsPage: String(eventsPage),
                 },
               }}
-              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className={buttonVariants({ variant: "secondary" })}
             >
               Load more users
             </Link>
           </div>
         )}
-      </section>
+      </Card>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <Card className="p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
             Groups
           </h2>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink-muted">
             Showing {groups.length} of {groupsResult.total}
           </span>
         </div>
@@ -191,7 +188,7 @@ export default async function AdminPage({
         </div>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-400">
+            <thead className="text-xs uppercase text-ink-subtle">
               <tr>
                 <th className="py-2">Group</th>
                 <th className="py-2">Members</th>
@@ -203,21 +200,16 @@ export default async function AdminPage({
             </thead>
             <tbody>
               {groups.map((g) => (
-                <tr key={g.id} className="border-t border-slate-100">
-                  <td className="py-2 font-medium text-slate-900">{g.title}</td>
-                  <td className="py-2 text-slate-600">{g.memberCount}</td>
-                  <td className="py-2 text-slate-600">{g.eventCount}</td>
-                  <td className="py-2 text-slate-600">{g.createdByName}</td>
-                  <td className="py-2 text-slate-600">
-                    {formatDate(g.createdAt)}
-                  </td>
+                <tr key={g.id} className="border-t border-line">
+                  <td className="py-2 font-medium text-ink">{g.title}</td>
+                  <td className="py-2 text-ink-muted">{g.memberCount}</td>
+                  <td className="py-2 text-ink-muted">{g.eventCount}</td>
+                  <td className="py-2 text-ink-muted">{g.createdByName}</td>
+                  <td className="py-2 text-ink-muted">{formatDate(g.createdAt)}</td>
                   <td className="py-2 text-right">
                     <form action={adminDeleteGroupAction}>
                       <input type="hidden" name="groupId" value={g.id} />
-                      <button
-                        type="submit"
-                        className="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
-                      >
+                      <button type="submit" className={deleteButtonClass}>
                         Delete
                       </button>
                     </form>
@@ -240,20 +232,20 @@ export default async function AdminPage({
                   eventsSort,
                 },
               }}
-              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className={buttonVariants({ variant: "secondary" })}
             >
               Load more groups
             </Link>
           </div>
         )}
-      </section>
+      </Card>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <Card className="p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
             Events
           </h2>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink-muted">
             Showing {events.length} of {eventsResult.total}
           </span>
         </div>
@@ -273,7 +265,7 @@ export default async function AdminPage({
         </div>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-400">
+            <thead className="text-xs uppercase text-ink-subtle">
               <tr>
                 <th className="py-2">Event</th>
                 <th className="py-2">Group</th>
@@ -285,33 +277,24 @@ export default async function AdminPage({
             </thead>
             <tbody>
               {events.map((e) => (
-                <tr key={e.id} className="border-t border-slate-100">
-                  <td className="py-2 font-medium text-slate-900">{e.title}</td>
-                  <td className="py-2 text-slate-600">{e.groupTitle}</td>
-                  <td className="py-2 text-slate-600">
+                <tr key={e.id} className="border-t border-line">
+                  <td className="py-2 font-medium text-ink">{e.title}</td>
+                  <td className="py-2 text-ink-muted">{e.groupTitle}</td>
+                  <td className="py-2 text-ink-muted">
                     {formatDateTime(e.date, e.time)}
                   </td>
-                  <td className="py-2 text-slate-600">
+                  <td className="py-2 text-ink-muted">
                     {e.attendees}/{e.capacity}
                   </td>
                   <td className="py-2">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                        e.canceled
-                          ? "bg-red-100 text-red-700"
-                          : "bg-emerald-100 text-emerald-700"
-                      }`}
-                    >
+                    <Badge variant={e.canceled ? "danger" : "success"}>
                       {e.canceled ? "Canceled" : "Active"}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="py-2 text-right">
                     <form action={adminDeleteEventAction}>
                       <input type="hidden" name="eventId" value={e.id} />
-                      <button
-                        type="submit"
-                        className="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
-                      >
+                      <button type="submit" className={deleteButtonClass}>
                         Delete
                       </button>
                     </form>
@@ -334,13 +317,13 @@ export default async function AdminPage({
                   eventsSort,
                 },
               }}
-              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className={buttonVariants({ variant: "secondary" })}
             >
               Load more events
             </Link>
           </div>
         )}
-      </section>
+      </Card>
     </div>
   );
 }
