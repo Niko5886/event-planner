@@ -29,7 +29,7 @@ export function DeleteGroupButton({ groupId, groupTitle }: Props) {
       type="button"
       onClick={onClick}
       disabled={isPending}
-      className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-danger/30 bg-surface px-3 py-1.5 text-sm font-medium text-danger-ink transition-colors hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-50"
     >
       <Trash2 className="h-4 w-4" />
       {isPending ? "Deleting…" : "Delete group"}

@@ -6,7 +6,6 @@ import {
   AlertCircle,
   CalendarDays,
   Clock,
-  Loader2,
   MapPin,
   Plus,
   Tag,
@@ -17,6 +16,8 @@ import {
   createEventAction,
   type EventActionState,
 } from "@/lib/actions/events";
+import { Button, Input, Label, Textarea, buttonVariants } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 const initialState: EventActionState = { error: null };
 
@@ -42,19 +43,13 @@ export function CreateEventForm({ groupId }: Props) {
         placeholder="Event name"
       />
 
-      <div>
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-slate-700"
-        >
-          Description
-        </label>
-        <textarea
+      <div className="space-y-1.5">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
           id="description"
           name="description"
           rows={4}
           maxLength={2000}
-          className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="A short description of the event…"
         />
       </div>
@@ -101,28 +96,20 @@ export function CreateEventForm({ groupId }: Props) {
       </div>
 
       {state.error && (
-        <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className="flex items-start gap-2 rounded-lg border border-danger/20 bg-danger-soft p-3 text-sm text-danger-ink">
           <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
           <span>{state.error}</span>
         </div>
       )}
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {pending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Plus className="h-4 w-4" />
-          )}
+        <Button type="submit" loading={pending}>
+          {!pending && <Plus className="h-4 w-4" />}
           {pending ? "Creating…" : "Create event"}
-        </button>
+        </Button>
         <Link
           href={`/groups/${groupId}`}
-          className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+          className={buttonVariants({ variant: "secondary" })}
         >
           <X className="h-4 w-4" />
           Cancel
@@ -156,17 +143,15 @@ function Field({
   max?: number;
 }) {
   return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-slate-700">
-        {label}
-      </label>
-      <div className="relative mt-1">
+    <div className="space-y-1.5">
+      <Label htmlFor={name}>{label}</Label>
+      <div className="relative">
         {icon && (
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle">
             {icon}
           </span>
         )}
-        <input
+        <Input
           id={name}
           name={name}
           type={type}
@@ -176,9 +161,7 @@ function Field({
           maxLength={maxLength}
           min={min}
           max={max}
-          className={`w-full rounded-md border border-slate-300 bg-white py-2 ${
-            icon ? "pl-9" : "pl-3"
-          } pr-3 text-sm shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500`}
+          className={cn(icon ? "pl-9" : undefined)}
         />
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Copy, Link2 } from "lucide-react";
+import { Button } from "@/components/ui";
 
 export function InviteLink({
   groupId,
@@ -29,18 +30,14 @@ export function InviteLink({
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row">
-      <div className="flex flex-1 items-center gap-2 rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-        <Link2 className="h-4 w-4 flex-shrink-0 text-slate-400" />
+      <div className="flex flex-1 items-center gap-2 rounded-lg border border-line bg-surface-muted px-3 py-2 text-sm text-ink">
+        <Link2 className="h-4 w-4 flex-shrink-0 text-ink-subtle" />
         <span className="truncate font-mono text-xs sm:text-sm">{url}</span>
       </div>
-      <button
-        type="button"
-        onClick={handleCopy}
-        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-      >
+      <Button type="button" variant="secondary" onClick={handleCopy}>
         {copied ? (
           <>
-            <Check className="h-4 w-4 text-emerald-600" />
+            <Check className="h-4 w-4 text-success" />
             Copied
           </>
         ) : (
@@ -49,7 +46,7 @@ export function InviteLink({
             Copy
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

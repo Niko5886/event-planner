@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarPlus } from "lucide-react";
 import { CreateEventForm } from "./CreateEventForm";
 import { getCurrentUser } from "@/lib/auth";
 import { GroupError, getGroupDetails } from "@/services/groupService";
+import { Card } from "@/components/ui";
 
 export const metadata = {
   title: "Create Event · Event Planner",
@@ -39,32 +40,32 @@ export default async function NewEventPage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <Link
         href={`/groups/${groupId}`}
-        className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-indigo-700"
+        className="inline-flex items-center gap-1.5 text-sm text-ink-muted transition-colors hover:text-brand-700"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to {group.title}
       </Link>
 
       <header className="mt-4 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">
           <CalendarPlus className="h-6 w-6" />
         </div>
         <div>
-          <p className="text-sm font-medium uppercase tracking-wide text-indigo-600">
+          <p className="text-sm font-medium uppercase tracking-wide text-brand-600">
             {group.title}
           </p>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             New event
           </h1>
         </div>
       </header>
 
-      <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <Card className="mt-8 p-6">
         <CreateEventForm groupId={groupId} />
-      </section>
+      </Card>
     </div>
   );
 }

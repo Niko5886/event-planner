@@ -7,6 +7,7 @@ import {
   getGroupByInviteCode,
   isGroupMember,
 } from "@/services/groupService";
+import { Card } from "@/components/ui";
 
 export const metadata = {
   title: "Join group · Event Planner",
@@ -48,30 +49,30 @@ export default async function JoinGroupPage({
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-12">
-      <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+    <div className="mx-auto max-w-md px-4 py-12 sm:px-6">
+      <Card className="p-8 text-center shadow-lg">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-600">
           <Users className="h-6 w-6" />
         </div>
-        <h1 className="mt-4 text-xl font-bold text-slate-900">
+        <h1 className="mt-4 text-xl font-bold text-ink">
           You&apos;re invited to join
         </h1>
-        <h2 className="mt-1 text-2xl font-semibold text-indigo-600">
+        <h2 className="mt-1 text-2xl font-semibold text-brand-600">
           {invite.title}
         </h2>
         {invite.description && (
-          <p className="mt-3 text-sm text-slate-600">{invite.description}</p>
+          <p className="mt-3 text-sm text-ink-muted">{invite.description}</p>
         )}
         <div className="mt-6">
           <AcceptInviteButton code={code} />
         </div>
         <Link
           href="/groups"
-          className="mt-3 inline-block text-sm text-slate-500 hover:text-slate-700"
+          className="mt-3 inline-block text-sm text-ink-muted transition-colors hover:text-ink"
         >
           Decline
         </Link>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -84,14 +85,14 @@ function ErrorView({
   message: string;
 }) {
   return (
-    <div className="mx-auto max-w-md px-4 py-12">
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-        <AlertCircle className="mx-auto h-8 w-8 text-red-500" />
-        <h1 className="mt-3 text-lg font-semibold text-red-900">{title}</h1>
-        <p className="mt-1 text-sm text-red-700">{message}</p>
+    <div className="mx-auto max-w-md px-4 py-12 sm:px-6">
+      <div className="rounded-xl border border-danger/20 bg-danger-soft p-6 text-center">
+        <AlertCircle className="mx-auto h-8 w-8 text-danger" />
+        <h1 className="mt-3 text-lg font-semibold text-danger-ink">{title}</h1>
+        <p className="mt-1 text-sm text-danger-ink/90">{message}</p>
         <Link
           href="/groups"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-red-700 hover:text-red-900"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-danger-ink transition-colors hover:opacity-80"
         >
           Go to My Groups
           <ArrowRight className="h-4 w-4" />

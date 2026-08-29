@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Plus, Users } from "lucide-react";
 import { GroupCard } from "@/components/GroupCard";
 import { SortLinks } from "@/components/SortLinks";
+import { PageContainer } from "@/components/PageContainer";
+import { EmptyState, buttonVariants } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { listUserGroupsPaged, parseGroupSort } from "@/services/groupService";
 
@@ -43,20 +45,17 @@ export default async function GroupsPage({
   const hasMore = groups.length < total;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <PageContainer>
       <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-ink">
             My Groups
           </h1>
-          <p className="mt-1 text-slate-600">
+          <p className="mt-1 text-ink-muted">
             Groups you have joined or created.
           </p>
         </div>
-        <Link
-          href="/groups/new"
-          className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-        >
+        <Link href="/groups/new" className={buttonVariants({ variant: "primary" })}>
           <Plus className="h-4 w-4" />
           New Group
         </Link>
@@ -75,20 +74,20 @@ export default async function GroupsPage({
       )}
 
       {total === 0 ? (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-12 text-center">
-          <Users className="mx-auto h-10 w-10 text-slate-300" />
-          <p className="mt-4 font-medium text-slate-900">No groups yet</p>
-          <p className="mt-1 text-sm text-slate-600">
-            Create a group, or ask a friend for an invite link.
-          </p>
-          <Link
-            href="/groups/new"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-          >
-            <Plus className="h-4 w-4" />
-            Create your first group
-          </Link>
-        </div>
+        <EmptyState
+          icon={Users}
+          title="No groups yet"
+          description="Create a group, or ask a friend for an invite link."
+          action={
+            <Link
+              href="/groups/new"
+              className={buttonVariants({ variant: "primary" })}
+            >
+              <Plus className="h-4 w-4" />
+              Create your first group
+            </Link>
+          }
+        />
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -103,7 +102,7 @@ export default async function GroupsPage({
                   pathname: "/groups",
                   query: { page: String(page + 1), sort },
                 }}
-                className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                className={buttonVariants({ variant: "secondary" })}
               >
                 Load more groups
               </Link>
@@ -111,6 +110,6 @@ export default async function GroupsPage({
           )}
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }
