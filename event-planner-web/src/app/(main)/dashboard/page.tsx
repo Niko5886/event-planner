@@ -2,6 +2,9 @@ import Link from "next/link";
 import { CalendarCheck, CalendarX } from "lucide-react";
 import { EventCard } from "@/components/EventCard";
 import { SortLinks } from "@/components/SortLinks";
+import { PageContainer } from "@/components/PageContainer";
+import { SectionHeader } from "@/components/SectionHeader";
+import { EmptyState, buttonVariants } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import {
   getActiveEventsPaged,
@@ -56,41 +59,38 @@ export default async function DashboardPage({
   const hasMorePast = pastEvents.length < pastTotal;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <PageContainer>
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-3xl font-bold tracking-tight text-ink">
           Dashboard
         </h1>
-        <p className="mt-1 text-slate-600">
-          Welcome back, <span className="font-medium">{user.name}</span>.
+        <p className="mt-1 text-ink-muted">
+          Welcome back, <span className="font-medium text-ink">{user.name}</span>.
         </p>
       </header>
 
       <section>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <CalendarCheck className="h-5 w-5 text-indigo-600" />
-            <h2 className="text-xl font-semibold text-slate-900">
-              Upcoming Events
-            </h2>
-            <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
-              {activeTotal}
-            </span>
-          </div>
-          <SortLinks
-            param="sort"
-            current={sort}
-            options={EVENT_SORT_OPTIONS}
-            basePath="/dashboard"
-            extraParams={{
-              activePage: String(activePage),
-              pastPage: String(pastPage),
-            }}
-          />
-        </div>
+        <SectionHeader
+          title="Upcoming Events"
+          icon={CalendarCheck}
+          count={activeTotal}
+          actions={
+            <SortLinks
+              param="sort"
+              current={sort}
+              options={EVENT_SORT_OPTIONS}
+              basePath="/dashboard"
+              extraParams={{
+                activePage: String(activePage),
+                pastPage: String(pastPage),
+              }}
+            />
+          }
+        />
 
         {activeTotal === 0 ? (
           <EmptyState
+            icon={CalendarCheck}
             title="No active events"
             description="When you or a group manager creates an event, it will appear here."
           />
@@ -112,7 +112,7 @@ export default async function DashboardPage({
                       sort,
                     },
                   }}
-                  className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                  className={buttonVariants({ variant: "secondary" })}
                 >
                   Load more upcoming events
                 </Link>
@@ -123,18 +123,11 @@ export default async function DashboardPage({
       </section>
 
       <section className="mt-12">
-        <div className="mb-4 flex items-center gap-2">
-          <CalendarX className="h-5 w-5 text-slate-500" />
-          <h2 className="text-lg font-semibold text-slate-700">
-            Past &amp; Canceled Events
-          </h2>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-            {pastTotal}
-          </span>
-        </div>
+        <SectionHeader title="Past & Canceled Events" icon={CalendarX} count={pastTotal} />
 
         {pastTotal === 0 ? (
           <EmptyState
+            icon={CalendarX}
             title="No past events yet"
             description="Past and canceled events will be archived here."
             muted
@@ -157,7 +150,7 @@ export default async function DashboardPage({
                       sort,
                     },
                   }}
-                  className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                  className={buttonVariants({ variant: "secondary" })}
                 >
                   Load more past events
                 </Link>
@@ -166,29 +159,6 @@ export default async function DashboardPage({
           </>
         )}
       </section>
-    </div>
-  );
-}
-
-function EmptyState({
-  title,
-  description,
-  muted = false,
-}: {
-  title: string;
-  description: string;
-  muted?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-lg border border-dashed p-8 text-center ${
-        muted
-          ? "border-slate-200 bg-slate-50/50 text-slate-500"
-          : "border-slate-300 bg-white text-slate-600"
-      }`}
-    >
-      <p className="font-medium text-slate-700">{title}</p>
-      <p className="mt-1 text-sm">{description}</p>
-    </div>
+    </PageContainer>
   );
 }
