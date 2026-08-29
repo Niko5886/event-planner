@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { postEventCommentAction, type CommentActionState } from "@/lib/actions/events";
+import { Button, Label, Textarea } from "@/components/ui";
 
 const initialState: CommentActionState = { error: null, success: null };
 const MAX_COMMENT_LENGTH = 2000;
@@ -27,41 +28,40 @@ export function EventCommentForm({ eventId }: { eventId: number }) {
     <form action={action} className="mt-5 space-y-3">
       <input type="hidden" name="eventId" value={eventId} />
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Add comment
-        </label>
-        <textarea
+        <Label htmlFor="comment-text">Add comment</Label>
+        <Textarea
+          id="comment-text"
           name="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={MAX_COMMENT_LENGTH}
           rows={3}
           placeholder="Write a comment..."
-          className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="mt-2"
         />
-        <div className="mt-1 text-right text-xs text-slate-400">
+        <div className="mt-1 text-right text-xs text-ink-subtle">
           {text.length}/{MAX_COMMENT_LENGTH}
         </div>
       </div>
 
       {state.error && (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-lg border border-danger/20 bg-danger-soft px-3 py-2 text-sm text-danger-ink">
           {state.error}
         </p>
       )}
       {state.success && (
-        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <p className="rounded-lg border border-success/20 bg-success-soft px-3 py-2 text-sm text-success-ink">
           {state.success}
         </p>
       )}
 
-      <button
+      <Button
         type="submit"
-        disabled={pending || text.trim().length === 0}
-        className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+        loading={pending}
+        disabled={text.trim().length === 0}
       >
         {pending ? "Posting..." : "Post comment"}
-      </button>
+      </Button>
     </form>
   );
 }

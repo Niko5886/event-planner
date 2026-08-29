@@ -28,6 +28,7 @@ import {
   type CapacityState,
   type EventState,
 } from "@/lib/eventState";
+import { Avatar, Badge, Card, type BadgeVariant } from "@/components/ui";
 
 function formatDate(date: string): string {
   const d = new Date(`${date}T00:00:00`);
@@ -49,10 +50,10 @@ const STATE_LABEL: Record<EventState, string> = {
   past: "Past",
 };
 
-const STATE_STYLE: Record<EventState, string> = {
-  upcoming: "bg-indigo-100 text-indigo-700",
-  ongoing: "bg-emerald-100 text-emerald-700",
-  past: "bg-slate-200 text-slate-600",
+const STATE_VARIANT: Record<EventState, BadgeVariant> = {
+  upcoming: "brand",
+  ongoing: "success",
+  past: "neutral",
 };
 
 const CAPACITY_LABEL: Record<CapacityState, string> = {
@@ -61,10 +62,10 @@ const CAPACITY_LABEL: Record<CapacityState, string> = {
   over: "Over capacity",
 };
 
-const CAPACITY_STYLE: Record<CapacityState, string> = {
-  under: "bg-slate-100 text-slate-600",
-  full: "bg-amber-100 text-amber-700",
-  over: "bg-red-100 text-red-700",
+const CAPACITY_VARIANT: Record<CapacityState, BadgeVariant> = {
+  under: "neutral",
+  full: "warning",
+  over: "danger",
 };
 
 export default async function EventDetailPage({
@@ -98,10 +99,10 @@ export default async function EventDetailPage({
   );
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-indigo-700"
+        className="inline-flex items-center gap-1.5 text-sm text-ink-muted transition-colors hover:text-brand-700"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Dashboard
@@ -111,92 +112,82 @@ export default async function EventDetailPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href={`/groups/${event.groupId}`}
-            className="text-xs font-medium uppercase tracking-wide text-indigo-600 hover:text-indigo-700"
+            className="text-xs font-medium uppercase tracking-wide text-brand-600 transition-colors hover:text-brand-700"
           >
             {event.groupTitle}
           </Link>
           <div className="flex flex-wrap items-center gap-1.5">
             {event.canceled && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+              <Badge variant="danger">
                 <Ban className="h-3 w-3" />
                 Canceled
-              </span>
+              </Badge>
             )}
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${STATE_STYLE[state]}`}
-            >
+            <Badge variant={STATE_VARIANT[state]}>
               <CircleDot className="h-3 w-3" />
               {STATE_LABEL[state]}
-            </span>
+            </Badge>
           </div>
         </div>
 
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">
           {event.title}
         </h1>
         {event.description && (
-          <p className="mt-3 whitespace-pre-line text-slate-600">
+          <p className="mt-3 whitespace-pre-line text-ink-muted">
             {event.description}
           </p>
         )}
       </header>
 
-      <section className="mt-6 grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2">
+      <Card className="mt-6 grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
         <InfoRow
-          icon={<CalendarDays className="h-4 w-4 text-slate-400" />}
+          icon={<CalendarDays className="h-4 w-4 text-ink-subtle" />}
           label="Date"
           value={formatDate(event.date)}
         />
         <InfoRow
-          icon={<Clock className="h-4 w-4 text-slate-400" />}
+          icon={<Clock className="h-4 w-4 text-ink-subtle" />}
           label="Time"
           value={formatTime(event.time)}
         />
         {event.location && (
           <InfoRow
-            icon={<MapPin className="h-4 w-4 text-slate-400" />}
+            icon={<MapPin className="h-4 w-4 text-ink-subtle" />}
             label="Location"
             value={event.location}
           />
         )}
         {event.eventType && (
           <InfoRow
-            icon={<Tag className="h-4 w-4 text-slate-400" />}
+            icon={<Tag className="h-4 w-4 text-ink-subtle" />}
             label="Type"
-            value={
-              <span className="capitalize">{event.eventType}</span>
-            }
+            value={<span className="capitalize">{event.eventType}</span>}
           />
         )}
         <InfoRow
-          icon={<Users className="h-4 w-4 text-slate-400" />}
+          icon={<Users className="h-4 w-4 text-ink-subtle" />}
           label="Attendees"
           value={
-            <span className="flex items-center gap-2">
-              <span className="font-medium text-slate-900">
-                {event.attendees}
-              </span>
-              <span className="text-slate-400">/ {event.capacity}</span>
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${CAPACITY_STYLE[capacity]}`}
-              >
-                {capacity === "over" && (
-                  <AlertOctagon className="h-3 w-3" />
-                )}
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="font-medium text-ink">{event.attendees}</span>
+              <span className="text-ink-subtle">/ {event.capacity}</span>
+              <Badge variant={CAPACITY_VARIANT[capacity]}>
+                {capacity === "over" && <AlertOctagon className="h-3 w-3" />}
                 {CAPACITY_LABEL[capacity]}
-              </span>
+              </Badge>
             </span>
           }
         />
         <InfoRow
-          icon={<User className="h-4 w-4 text-slate-400" />}
+          icon={<User className="h-4 w-4 text-ink-subtle" />}
           label="Created by"
           value={event.creatorName}
         />
-      </section>
+      </Card>
 
-      <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <Card className="mt-6 p-5">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
           Actions
         </h2>
         <div className="mt-3">
@@ -210,21 +201,19 @@ export default async function EventDetailPage({
             maxExtraSlots={maxExtraSlots}
           />
         </div>
-      </section>
+      </Card>
 
-      <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <Card className="mt-6 p-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
             Comments
           </h2>
-          <span className="text-sm text-slate-500">{comments.length} total</span>
+          <span className="text-sm text-ink-muted">{comments.length} total</span>
         </div>
 
         <div className="mt-4 space-y-4">
           {comments.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              No comments yet.
-            </p>
+            <p className="text-sm text-ink-muted">No comments yet.</p>
           ) : (
             comments.map((comment) => (
               <CommentItem key={comment.id} comment={comment} />
@@ -233,47 +222,30 @@ export default async function EventDetailPage({
         </div>
 
         <EventCommentForm eventId={event.id} />
-      </section>
+      </Card>
     </div>
   );
 }
 
 function CommentItem({ comment }: { comment: EventCommentData }) {
-  const initials = comment.authorName
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   return (
-    <article className="flex gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white">
-        {comment.authorPhotoUrl ? (
-          // User avatar from external storage (R2); next/image would require
-          // configuring images.remotePatterns for arbitrary user hosts.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={comment.authorPhotoUrl}
-            alt={comment.authorName}
-            className="h-10 w-10 rounded-full object-cover"
-          />
-        ) : (
-          initials || <User className="h-4 w-4" />
-        )}
-      </div>
+    <article className="flex gap-3 rounded-lg border border-line bg-surface-muted/60 p-4">
+      <Avatar
+        name={comment.authorName}
+        src={comment.authorPhotoUrl}
+        size="md"
+      />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-ink">
             {comment.authorName}
           </p>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-ink-subtle">
             {formatCommentDate(comment.createdAt)}
           </span>
         </div>
-        <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+        <p className="mt-2 whitespace-pre-line text-sm leading-6 text-ink-muted">
           {comment.text}
         </p>
       </div>
@@ -301,10 +273,10 @@ function InfoRow({
     <div className="flex items-start gap-3">
       <span className="mt-0.5">{icon}</span>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
           {label}
         </p>
-        <div className="mt-0.5 text-sm text-slate-700">{value}</div>
+        <div className="mt-0.5 text-sm text-ink">{value}</div>
       </div>
     </div>
   );

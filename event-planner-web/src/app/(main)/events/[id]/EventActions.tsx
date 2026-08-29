@@ -5,7 +5,6 @@ import { useActionState, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
-  Loader2,
   LogIn,
   LogOut,
   Pencil,
@@ -19,6 +18,8 @@ import {
   updateSlotsAction,
   type EventActionState,
 } from "@/lib/actions/events";
+import { Button, buttonVariants } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 const initialState: EventActionState = { error: null, success: null };
 
@@ -30,6 +31,9 @@ type Props = {
   userExtraSlots: number;
   maxExtraSlots: number;
 };
+
+const stepperClass =
+  "inline-flex h-7 w-7 items-center justify-center rounded-md border border-line-strong bg-surface text-sm font-semibold text-ink shadow-xs transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60";
 
 export function EventActions({
   eventId,
@@ -75,23 +79,15 @@ export function EventActions({
         {!isRsvped ? (
           <form action={rsvpAction}>
             <input type="hidden" name="eventId" value={eventId} />
-            <button
-              type="submit"
-              disabled={!isOpen || rsvpPending}
-              className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {rsvpPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <LogIn className="h-4 w-4" />
-              )}
+            <Button type="submit" loading={rsvpPending} disabled={!isOpen}>
+              {!rsvpPending && <LogIn className="h-4 w-4" />}
               {rsvpPending ? "Joining…" : "Join"}
-            </button>
+            </Button>
           </form>
         ) : (
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            <div className="flex items-center gap-2 rounded-lg border border-line bg-surface-muted px-3 py-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-ink-muted">
                 Extra slots (available: {maxExtraSlots})
               </span>
               <div className="flex items-center gap-2">
@@ -105,13 +101,13 @@ export function EventActions({
                   <button
                     type="submit"
                     disabled={!isOpen || slotsPending || !canDecSlots}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className={stepperClass}
                     aria-label="Decrease extra slots"
                   >
                     −
                   </button>
                 </form>
-                <span className="min-w-[1.5rem] text-center text-sm font-semibold text-slate-700">
+                <span className="min-w-[1.5rem] text-center text-sm font-semibold text-ink">
                   {userExtraSlots}
                 </span>
                 <form action={slotsAction}>
@@ -124,7 +120,7 @@ export function EventActions({
                   <button
                     type="submit"
                     disabled={!isOpen || slotsPending || !canIncSlots}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className={stepperClass}
                     aria-label="Increase extra slots"
                   >
                     +
@@ -135,18 +131,15 @@ export function EventActions({
 
             <form action={leaveAction}>
               <input type="hidden" name="eventId" value={eventId} />
-              <button
+              <Button
                 type="submit"
-                disabled={!isOpen || leavePending}
-                className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                variant="secondary"
+                loading={leavePending}
+                disabled={!isOpen}
               >
-                {leavePending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <LogOut className="h-4 w-4" />
-                )}
+                {!leavePending && <LogOut className="h-4 w-4" />}
                 {leavePending ? "Leaving…" : "Leave"}
-              </button>
+              </Button>
             </form>
           </div>
         )}
@@ -155,7 +148,7 @@ export function EventActions({
           <>
             <Link
               href={`/events/${eventId}/edit`}
-              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className={buttonVariants({ variant: "secondary" })}
             >
               <Pencil className="h-4 w-4" />
               Edit
@@ -166,7 +159,7 @@ export function EventActions({
       </div>
 
       {!isOpen && !isRsvped && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-ink-muted">
           This event has already ended or has been canceled — joining is not
           possible.
         </p>
@@ -174,11 +167,12 @@ export function EventActions({
 
       {feedback && (
         <div
-          className={`flex items-start gap-2 rounded-md border p-3 text-sm ${
+          className={cn(
+            "flex items-start gap-2 rounded-lg border p-3 text-sm",
             feedback.type === "error"
-              ? "border-red-200 bg-red-50 text-red-700"
-              : "border-emerald-200 bg-emerald-50 text-emerald-700"
-          }`}
+              ? "border-danger/20 bg-danger-soft text-danger-ink"
+              : "border-success/20 bg-success-soft text-success-ink"
+          )}
         >
           {feedback.type === "error" ? (
             <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
@@ -200,7 +194,7 @@ function DeleteButton({ eventId }: { eventId: number }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="inline-flex items-center gap-2 rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-50"
+        className="inline-flex items-center gap-2 rounded-lg border border-danger/30 bg-surface px-4 py-2 text-sm font-semibold text-danger-ink shadow-xs transition-colors hover:bg-danger-soft"
       >
         <Trash2 className="h-4 w-4" />
         Delete
@@ -209,22 +203,19 @@ function DeleteButton({ eventId }: { eventId: number }) {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2">
-      <span className="text-sm font-medium text-red-700">Are you sure?</span>
+    <div className="flex items-center gap-2 rounded-lg border border-danger/20 bg-danger-soft px-3 py-2">
+      <span className="text-sm font-medium text-danger-ink">Are you sure?</span>
       <form action={deleteEventAction}>
         <input type="hidden" name="eventId" value={eventId} />
-        <button
-          type="submit"
-          className="inline-flex items-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-red-700"
-        >
+        <Button type="submit" variant="danger" size="sm">
           <Trash2 className="h-3.5 w-3.5" />
           Yes, delete
-        </button>
+        </Button>
       </form>
       <button
         type="button"
         onClick={() => setConfirming(false)}
-        className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+        className="inline-flex items-center gap-1 rounded-md border border-line-strong bg-surface px-2 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-surface-muted"
         aria-label="Cancel"
       >
         <X className="h-3.5 w-3.5" />

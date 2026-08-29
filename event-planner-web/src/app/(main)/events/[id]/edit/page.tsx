@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { EditEventForm } from "./EditEventForm";
 import { getCurrentUser } from "@/lib/auth";
 import { EventError, getEventDetails } from "@/services/eventService";
+import { Card } from "@/components/ui";
 
 export default async function EditEventPage({
   params,
@@ -31,23 +32,23 @@ export default async function EditEventPage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <Link
         href={`/events/${eventId}`}
-        className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-indigo-700"
+        className="inline-flex items-center gap-1.5 text-sm text-ink-muted transition-colors hover:text-brand-700"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to event
       </Link>
 
-      <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">
+      <h1 className="mt-4 text-3xl font-bold tracking-tight text-ink">
         Edit event
       </h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-ink-muted">
         Change date, time, location, capacity, or cancel the event.
       </p>
 
-      <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <Card className="mt-6 p-6">
         <EditEventForm
           eventId={event.id}
           initial={{
@@ -61,7 +62,7 @@ export default async function EditEventPage({
             canceled: event.canceled,
           }}
         />
-      </div>
+      </Card>
     </div>
   );
 }
