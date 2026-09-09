@@ -1,8 +1,38 @@
-# Event Planner – Project Description
+<h1 align="center">Event Planner</h1>
 
-**Event Planner** is a multi-platform full-stack web and mobile application for friends, colleagues and communities to **plan and organize shared events** – parties, hikes, dinners, sports activities, cultural outings and more.
+<p align="center"><em>Plan together. Show up together.</em></p>
 
-The app allows users to create **groups**, where events are organized and managed. Group managers announce events, and group members can RSVP, bring friends, leave comments and share event links with others.
+<p align="center">
+  A multi-platform full-stack app for friends, colleagues and communities to
+  <strong>plan and organize shared events</strong> — parties, hikes, dinners, sports and more.<br/>
+  Create groups, announce events, RSVP with +1s, comment, and share invite links.
+</p>
+
+<p align="center">
+  <a href="https://event-planner-event-planner-web.vercel.app">
+    <img src="https://img.shields.io/badge/%F0%9F%8C%90%20Live%20Demo%20%E2%86%92-Open%20the%20app-7c3aed?style=for-the-badge&labelColor=1e1b2e" height="34" alt="Live Demo" />
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-38BDF8?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Drizzle_ORM-0B0B0B?logo=drizzle&logoColor=C5F74F" alt="Drizzle ORM" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Neon-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL / Neon" />
+  <img src="https://img.shields.io/badge/Expo-React_Native-000020?logo=expo&logoColor=white" alt="Expo React Native" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="Event Planner — plan events with your friends" width="100%" />
+</p>
+
+---
+
+**Event Planner** lets users create **groups** where events are organized and managed. Group
+managers announce events, and members RSVP, bring friends (+1 / +2 / +3), leave comments, and
+share event links with others.
 
 ---
 
