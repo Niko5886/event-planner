@@ -15,7 +15,18 @@ export function Footer() {
             Plan events with your friends.
           </span>
         </div>
-        <span>© {year} Event Planner &amp; Nikolay Stoyanov</span>
+        <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+          <span>© {year} Event Planner &amp; Nikolay Stoyanov</span>
+          <span className="hidden text-line-strong sm:inline">·</span>
+          <a
+            href="https://nikolay-ai-native-developer.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-ink"
+          >
+            Designed &amp; built by N. Stoyanov
+          </a>
+        </div>
       </div>
     </footer>
   );
